@@ -1,0 +1,122 @@
+---
+import { Image } from 'astro:assets';
+import { scenes } from '../content/scenes';
+import { href } from '../lib/site';
+
+const startScene = scenes[0]?.id ?? 'desk';
+---
+
+<section id="setup-explorer" class="io" aria-label="Interaktives Setup — klick auf ein Gerät">
+  <div class="explorer relative overflow-hidden rounded-3xl border border-line bg-card">
+    {scenes.map((scene, si) => (
+      <div
+        class="exp-scene"
+        data-scene={scene.id}
+        data-active={scene.id === startScene ? 'true' : undefined}
+        aria-hidden={scene.id === startScene ? undefined : 'true'}
+      >
+        <Image
+          src={scene.art}
+          alt={scene.artAlt}
+          widths={[828, 1280, 1920]}
+          sizes="(min-width: 1280px) 1152px, 96vw"
+          loading={si === 0 ? 'eager' : 'lazy'}
+          quality={80}
+          class="exp-art"
+        />
+        <div class="exp-vignette" aria-hidden="true"></div>
+
+        {scene.backTo && (
+          <button
+            class="exp-back meta"
+            data-goto={scene.backTo}
+            type="button"
+          >← Zurück zum Setup</button>
+        )}
+        <p class="exp-title meta" aria-hidden="true">{scene.title}</p>
+
+        {scene.hotspots.map((h, i) =>
+          h.target.type === 'bereich' ? (
+            <a
+              href={href(`/${h.target.slug}`)}
+              class="hotspot"
+              style={`--hx: ${h.x}%; --hy: ${h.y}%; --pd: ${i * 350}ms`}
+              aria-label={`Bereich öffnen: ${h.label}`}
+            >
+              <span class="hs-ping" aria-hidden="true"></span>
+              <span class="hs-dot" aria-hidden="true">✳</span>
+              <span class="hs-label">{h.label}</span>
+            </a>
+          ) : (
+            <button
+              type="button"
+              class="hotspot hotspot-scene"
+              data-goto={h.target.id}
+              style={`--hx: ${h.x}%; --hy: ${h.y}%; --pd: ${i * 350}ms`}
+              aria-label={h.label}
+            >
+              <span class="hs-ping" aria-hidden="true"></span>
+              <span class="hs-dot" aria-hidden="true">+</span>
+              <span class="hs-label">{h.label}</span>
+            </button>
+          )
+        )}
+      </div>
+    ))}
+  </div>
+
+  <div class="mt-4">
+    {scenes.map((scene) => (
+      <div
+        class="flex-wrap items-center gap-2"
+        data-scene-legend={scene.id}
+        style={scene.id === startScene ? 'display:flex' : 'display:none'}
+      >
+        <span class="meta mr-1">{scene.title}:</span>
+        {scene.hotspots.map((h) =>
+          h.target.type === 'bereich' ? (
+            <a
+              href={href(`/${h.target.slug}`)}
+              class="rounded-full border border-line px-3 py-1 text-xs text-muted no-underline transition-colors hover:border-accent hover:text-paper"
+            >
+              {h.label}
+            </a>
+          ) : (
+            <button
+              type="button"
+              data-goto={h.target.id}
+              class="rounded-full border border-accent/60 px-3 py-1 text-xs text-accent-soft transition-colors hover:border-accent hover:text-paper"
+            >
+              {h.label} ↗
+            </button>
+          )
+        )}
+      </div>
+    ))}
+  </div>
+</section>
+
+<script>
+  const root = document.getElementById('setup-explorer');
+  if (root) {
+    const show = (id: string) => {
+      root.querySelectorAll<HTMLElement>('.exp-scene').forEach((s) => {
+        const active = s.dataset.scene === id;
+        if (active) {
+          s.setAttribute('data-active', 'true');
+          s.removeAttribute('aria-hidden');
+        } else {
+          s.removeAttribute('data-active');
+          s.setAttribute('aria-hidden', 'true');
+        }
+      });
+      root.querySelectorAll<HTMLElement>('[data-scene-legend]').forEach((l) => {
+        l.style.display = l.dataset.sceneLegend === id ? 'flex' : 'none';
+      });
+    };
+    root.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-goto]');
+      if (btn?.dataset.goto) show(btn.dataset.goto);
+    });
+  }
+</script>

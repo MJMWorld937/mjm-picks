@@ -2,7 +2,8 @@
 import { getCategories, getPublishedProducts } from '../lib/data';
 import { DISCLOSURE, href } from '../lib/site';
 
-const [categories, products] = await Promise.all([getCategories(), getPublishedProducts()]);
+const [allCategories, products] = await Promise.all([getCategories(), getPublishedProducts()]);
+const categories = allCategories.filter((c) => c.parent_id === null);
 const countFor = (catId: string) =>
   products.filter((p) => p.categories.some((c) => c.id === catId)).length;
 const current = Astro.url.pathname;

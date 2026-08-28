@@ -7,6 +7,8 @@ export interface Category {
   description: string;
   hue: 'violet' | 'cyan' | 'green' | 'amber';
   sort_order: number;
+  /** null = Hauptbereich; sonst Unterbereich der Eltern-Kategorie */
+  parent_id: string | null;
 }
 
 export interface EditorialContent {

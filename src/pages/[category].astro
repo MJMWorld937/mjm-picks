@@ -19,28 +19,53 @@ interface Props {
   category: Category;
 }
 const { category } = Astro.props;
-const art = categoryArt(category.slug);
+const allCategories = await getCategories();
+const parent = category.parent_id
+  ? allCategories.find((c) => c.id === category.parent_id) ?? null
+  : null;
+const children = allCategories
+  .filter((c) => c.parent_id === category.id)
+  .sort((a, b) => a.sort_order - b.sort_order);
+// Unterbereiche erben das Artwork des Hauptbereichs, bis sie eigenes bekommen
+const art = categoryArt(category.slug) ?? categoryArt(parent?.slug);
 const products = (await getPublishedProducts()).filter((p) =>
   p.categories.some((c) => c.id === category.id)
 );
+const allProducts = await getPublishedProducts();
+const countFor = (catId: string) =>
+  allProducts.filter((p) => p.categories.some((c) => c.id === catId)).length;
 
+const crumbs = [
+  { name: BRAND, path: '/' },
+  ...(parent ? [{ name: parent.name, path: `/${parent.slug}` }] : []),
+  { name: category.name, path: `/${category.slug}` },
+];
 const breadcrumbLd = {
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
-  itemListElement: [
-    { '@type': 'ListItem', position: 1, name: BRAND, item: new URL(href('/'), Astro.site).toString() },
-    { '@type': 'ListItem', position: 2, name: category.name, item: new URL(href(`/${category.slug}`), Astro.site).toString() },
-  ],
+  itemListElement: crumbs.map((c, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: c.name,
+    item: new URL(href(c.path), Astro.site).toString(),
+  })),
 };
 ---
 
 <Base
   title={category.name}
-  description={`${category.name}-Empfehlungen auf ${BRAND}: ${category.description}`}
+  description={`${category.name} auf ${BRAND}: ${category.description}`}
   jsonLd={[breadcrumbLd]}
+  noindex={products.length === 0}
 >
   <nav aria-label="Brotkrumen" class="pt-8 text-sm text-muted">
     <a href={href('/')} class="hover:text-paper">Start</a>
+    {parent && (
+      <>
+        <span aria-hidden="true"> / </span>
+        <a href={href(`/${parent.slug}`)} class="hover:text-paper">{parent.name}</a>
+      </>
+    )}
     <span aria-hidden="true"> / </span>
     <span aria-current="page">{category.name}</span>
   </nav>
@@ -62,6 +87,23 @@ const breadcrumbLd = {
     <h1 class="relative z-10 text-3xl sm:text-6xl">{category.name}</h1>
     <p class="relative z-10 mt-3 max-w-xl text-lg text-paper/85">{category.description}</p>
   </section>
+
+  {children.length > 0 && (
+    <section aria-label="Unterbereiche" class="mb-10">
+      <p class="meta mb-3">Unterbereiche</p>
+      <div class="flex flex-wrap gap-2">
+        {children.map((c) => (
+          <a
+            href={href(`/${c.slug}`)}
+            class="rounded-full border border-line px-4 py-1.5 text-sm text-muted no-underline transition-colors hover:border-accent hover:text-paper"
+          >
+            {c.name}
+            {countFor(c.id) > 0 && <span class="meta ml-1.5">{countFor(c.id)}</span>}
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
 
   {products.length > 0 ? (
     <div class="grid gap-5 pb-8 sm:grid-cols-2 lg:grid-cols-3">
