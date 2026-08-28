@@ -5,7 +5,7 @@ import { href } from '../lib/site';
 
 const startScene = scenes[0]?.id ?? 'desk';
 // Einblende-Verzögerung der Hotspots je Szene: im PC erst NACH der Abschraub-Sequenz
-const hotspotDelay: Record<string, string> = { desk: '250ms', 'pc-innen': '2050ms' };
+const hotspotDelay: Record<string, string> = { desk: '250ms', 'pc-innen': '2850ms' };
 ---
 
 <section id="setup-explorer" class="bleed" aria-label="Interaktives Setup — klick auf ein Gerät">
@@ -37,21 +37,25 @@ const hotspotDelay: Record<string, string> = { desk: '250ms', 'pc-innen': '2050m
           <Image
             src={scene.art}
             alt={scene.artAlt}
-            widths={[828, 1440, 1920, 2560]}
+            widths={[828, 1440, 1920, 2560, 3840]}
             sizes="(orientation: portrait) 170vh, 100vw"
             loading={si === 0 ? 'eager' : 'lazy'}
             fetchpriority={si === 0 ? 'high' : undefined}
-            quality={80}
+            quality={85}
             class="exp-art"
           />
           <div class="exp-vignette" aria-hidden="true"></div>
 
           {scene.id === 'pc-innen' && (
-            <div class="case-panel" aria-hidden="true">
-              <span class="screw" style="--sd: 0ms; left: 4%; top: 3%"></span>
-              <span class="screw" style="--sd: 130ms; right: 4%; top: 3%"></span>
-              <span class="screw" style="--sd: 260ms; left: 4%; bottom: 3%"></span>
-              <span class="screw" style="--sd: 390ms; right: 4%; bottom: 3%"></span>
+            <div
+              class="case-panel"
+              style="--panel-l: 29.5%; --panel-t: 7%; --panel-w: 43%; --panel-h: 84%"
+              aria-hidden="true"
+            >
+              <span class="screw" style="--sd: 0ms; left: 3.5%; top: 2.5%"></span>
+              <span class="screw" style="--sd: 180ms; right: 3.5%; top: 2.5%"></span>
+              <span class="screw" style="--sd: 360ms; left: 3.5%; bottom: 2.5%"></span>
+              <span class="screw" style="--sd: 540ms; right: 3.5%; bottom: 2.5%"></span>
             </div>
           )}
 
@@ -155,7 +159,7 @@ const hotspotDelay: Record<string, string> = { desk: '250ms', 'pc-innen': '2050m
       stage.style.setProperty('--zx', `${(((r.left + r.width / 2) - s.left) / s.width) * 100}%`);
       stage.style.setProperty('--zy', `${(((r.top + r.height / 2) - s.top) / s.height) * 100}%`);
       stage.classList.add('zooming');
-      window.setTimeout(done, 640);
+      window.setTimeout(done, 760);
     };
 
     const resetStage = () => {
@@ -164,6 +168,11 @@ const hotspotDelay: Record<string, string> = { desk: '250ms', 'pc-innen': '2050m
       void stage.offsetWidth; // Reflow erzwingen, damit der Reset nicht animiert
       stage.style.transition = '';
     };
+
+    // Browser-Zurück: Seite kommt aus dem BFCache mit eingefrorenem Zoom-Zustand zurück
+    window.addEventListener('pageshow', (e) => {
+      if ((e as PageTransitionEvent).persisted) resetStage();
+    });
 
     root.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
