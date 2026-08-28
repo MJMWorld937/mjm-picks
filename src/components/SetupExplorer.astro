@@ -4,68 +4,90 @@ import { scenes } from '../content/scenes';
 import { href } from '../lib/site';
 
 const startScene = scenes[0]?.id ?? 'desk';
+// Einblende-Verzögerung der Hotspots je Szene: im PC erst NACH der Abschraub-Sequenz
+const hotspotDelay: Record<string, string> = { desk: '250ms', 'pc-innen': '2050ms' };
 ---
 
-<section id="setup-explorer" class="io" aria-label="Interaktives Setup — klick auf ein Gerät">
-  <div class="explorer relative overflow-hidden rounded-3xl border border-line bg-card">
-    {scenes.map((scene, si) => (
+<section id="setup-explorer" class="bleed" aria-label="Interaktives Setup — klick auf ein Gerät">
+  <div class="relative">
+  <div class="exp-ui" aria-live="polite">
+    {scenes.map((scene) => (
       <div
-        class="exp-scene"
-        data-scene={scene.id}
-        data-active={scene.id === startScene ? 'true' : undefined}
-        aria-hidden={scene.id === startScene ? undefined : 'true'}
+        class="exp-ui-row"
+        data-scene-ui={scene.id}
+        style={scene.id === startScene ? 'display:flex' : 'display:none'}
       >
-        <Image
-          src={scene.art}
-          alt={scene.artAlt}
-          widths={[828, 1280, 1920]}
-          sizes="(min-width: 1280px) 1152px, 96vw"
-          loading={si === 0 ? 'eager' : 'lazy'}
-          quality={80}
-          class="exp-art"
-        />
-        <div class="exp-vignette" aria-hidden="true"></div>
-
+        <p class="meta exp-ui-title">{scene.title}</p>
         {scene.backTo && (
-          <button
-            class="exp-back meta"
-            data-goto={scene.backTo}
-            type="button"
-          >← Zurück zum Setup</button>
-        )}
-        <p class="exp-title meta" aria-hidden="true">{scene.title}</p>
-
-        {scene.hotspots.map((h, i) =>
-          h.target.type === 'bereich' ? (
-            <a
-              href={href(`/${h.target.slug}`)}
-              class="hotspot"
-              style={`--hx: ${h.x}%; --hy: ${h.y}%; --pd: ${i * 350}ms`}
-              aria-label={`Bereich öffnen: ${h.label}`}
-            >
-              <span class="hs-ping" aria-hidden="true"></span>
-              <span class="hs-dot" aria-hidden="true">✳</span>
-              <span class="hs-label">{h.label}</span>
-            </a>
-          ) : (
-            <button
-              type="button"
-              class="hotspot hotspot-scene"
-              data-goto={h.target.id}
-              style={`--hx: ${h.x}%; --hy: ${h.y}%; --pd: ${i * 350}ms`}
-              aria-label={h.label}
-            >
-              <span class="hs-ping" aria-hidden="true"></span>
-              <span class="hs-dot" aria-hidden="true">+</span>
-              <span class="hs-label">{h.label}</span>
-            </button>
-          )
+          <button class="exp-back meta" data-goto={scene.backTo} type="button">← Zurück zum Setup</button>
         )}
       </div>
     ))}
   </div>
+  <div class="exp-viewport" id="exp-viewport">
+    <div class="exp-stage" id="exp-stage">
+      {scenes.map((scene, si) => (
+        <div
+          class="exp-scene"
+          data-scene={scene.id}
+          data-active={scene.id === startScene ? 'true' : undefined}
+          aria-hidden={scene.id === startScene ? undefined : 'true'}
+          style={`--hsd: ${hotspotDelay[scene.id] ?? '250ms'}`}
+        >
+          <Image
+            src={scene.art}
+            alt={scene.artAlt}
+            widths={[828, 1440, 1920, 2560]}
+            sizes="(orientation: portrait) 170vh, 100vw"
+            loading={si === 0 ? 'eager' : 'lazy'}
+            fetchpriority={si === 0 ? 'high' : undefined}
+            quality={80}
+            class="exp-art"
+          />
+          <div class="exp-vignette" aria-hidden="true"></div>
 
-  <div class="mt-4">
+          {scene.id === 'pc-innen' && (
+            <div class="case-panel" aria-hidden="true">
+              <span class="screw" style="--sd: 0ms; left: 4%; top: 3%"></span>
+              <span class="screw" style="--sd: 130ms; right: 4%; top: 3%"></span>
+              <span class="screw" style="--sd: 260ms; left: 4%; bottom: 3%"></span>
+              <span class="screw" style="--sd: 390ms; right: 4%; bottom: 3%"></span>
+            </div>
+          )}
+
+          {scene.hotspots.map((h, i) =>
+            h.target.type === 'bereich' ? (
+              <a
+                href={href(`/${h.target.slug}`)}
+                class="hotspot"
+                style={`--hx: ${h.x}%; --hy: ${h.y}%; --pd: ${i * 350}ms`}
+                aria-label={`Bereich öffnen: ${h.label}`}
+              >
+                <span class="hs-ping" aria-hidden="true"></span>
+                <span class="hs-dot" aria-hidden="true">✳</span>
+                <span class="hs-label">{h.label}</span>
+              </a>
+            ) : (
+              <button
+                type="button"
+                class="hotspot hotspot-scene"
+                data-goto={h.target.id}
+                style={`--hx: ${h.x}%; --hy: ${h.y}%; --pd: ${i * 350}ms`}
+                aria-label={h.label}
+              >
+                <span class="hs-ping" aria-hidden="true"></span>
+                <span class="hs-dot" aria-hidden="true">+</span>
+                <span class="hs-label">{h.label}</span>
+              </button>
+            )
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+  </div>
+
+  <div class="mx-auto mt-4 w-full max-w-6xl px-4 sm:px-6">
     {scenes.map((scene) => (
       <div
         class="flex-wrap items-center gap-2"
@@ -98,8 +120,15 @@ const startScene = scenes[0]?.id ?? 'desk';
 
 <script>
   const root = document.getElementById('setup-explorer');
-  if (root) {
-    const show = (id: string) => {
+  const stage = document.getElementById('exp-stage');
+  const viewport = document.getElementById('exp-viewport');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (root && stage && viewport) {
+    // Beim Laden mittig ausrichten (mobil ist die Bühne breiter als der Bildschirm)
+    viewport.scrollLeft = (viewport.scrollWidth - viewport.clientWidth) / 2;
+
+    const setScene = (id: string) => {
       root.querySelectorAll<HTMLElement>('.exp-scene').forEach((s) => {
         const active = s.dataset.scene === id;
         if (active) {
@@ -113,10 +142,52 @@ const startScene = scenes[0]?.id ?? 'desk';
       root.querySelectorAll<HTMLElement>('[data-scene-legend]').forEach((l) => {
         l.style.display = l.dataset.sceneLegend === id ? 'flex' : 'none';
       });
+      root.querySelectorAll<HTMLElement>('[data-scene-ui]').forEach((u) => {
+        u.style.display = u.dataset.sceneUi === id ? 'flex' : 'none';
+      });
     };
+
+    // Kamera fährt auf das angeklickte Element zu
+    const zoomTo = (el: HTMLElement, done: () => void) => {
+      if (reduced) return done();
+      const r = el.getBoundingClientRect();
+      const s = stage.getBoundingClientRect();
+      stage.style.setProperty('--zx', `${(((r.left + r.width / 2) - s.left) / s.width) * 100}%`);
+      stage.style.setProperty('--zy', `${(((r.top + r.height / 2) - s.top) / s.height) * 100}%`);
+      stage.classList.add('zooming');
+      window.setTimeout(done, 640);
+    };
+
+    const resetStage = () => {
+      stage.style.transition = 'none';
+      stage.classList.remove('zooming');
+      void stage.offsetWidth; // Reflow erzwingen, damit der Reset nicht animiert
+      stage.style.transition = '';
+    };
+
     root.addEventListener('click', (e) => {
-      const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-goto]');
-      if (btn?.dataset.goto) show(btn.dataset.goto);
+      const target = e.target as HTMLElement;
+      const gotoEl = target.closest<HTMLElement>('[data-goto]');
+      if (gotoEl?.dataset.goto) {
+        const id = gotoEl.dataset.goto;
+        if (gotoEl.classList.contains('hotspot')) {
+          // In den PC hineinfahren, dann Szene wechseln (Abschrauben läuft per CSS)
+          zoomTo(gotoEl, () => {
+            resetStage();
+            setScene(id);
+          });
+        } else {
+          setScene(id); // Zurück-Button & Legenden-Chips: direkter Wechsel
+        }
+        return;
+      }
+      const link = target.closest<HTMLAnchorElement>('a.hotspot');
+      if (link && !reduced) {
+        e.preventDefault();
+        zoomTo(link, () => {
+          window.location.href = link.href;
+        });
+      }
     });
   }
 </script>
