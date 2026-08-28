@@ -50,7 +50,7 @@ const hotspotDelay: Record<string, string> = { desk: '250ms', 'pc-innen': '450ms
             h.target.type === 'bereich' ? (
               <a
                 href={href(`/${h.target.slug}`)}
-                class="hotspot"
+                class={`hotspot hs-${h.labelSide ?? 'right'}`}
                 style={`--hx: ${h.x}%; --hy: ${h.y}%; --pd: ${i * 350}ms`}
                 aria-label={`Bereich öffnen: ${h.label}`}
               >
@@ -61,7 +61,7 @@ const hotspotDelay: Record<string, string> = { desk: '250ms', 'pc-innen': '450ms
             ) : (
               <button
                 type="button"
-                class="hotspot hotspot-scene"
+                class={`hotspot hotspot-scene hs-${h.labelSide ?? 'right'}`}
                 data-goto={h.target.id}
                 style={`--hx: ${h.x}%; --hy: ${h.y}%; --pd: ${i * 350}ms`}
                 aria-label={h.label}
@@ -130,14 +130,18 @@ const hotspotDelay: Record<string, string> = { desk: '250ms', 'pc-innen': '450ms
     // Beim Laden mittig ausrichten (mobil ist die Bühne breiter als der Bildschirm)
     viewport.scrollLeft = (viewport.scrollWidth - viewport.clientWidth) / 2;
 
-    const setScene = (id: string) => {
+    const setScene = (id: string, instant = false) => {
       root.querySelectorAll<HTMLElement>('.exp-scene').forEach((s) => {
         const active = s.dataset.scene === id;
         if (active) {
+          // instant: keine Einblende-Animation — nahtlos nach dem Video
+          if (instant) s.setAttribute('data-instant', '');
+          else s.removeAttribute('data-instant');
           s.setAttribute('data-active', 'true');
           s.removeAttribute('aria-hidden');
         } else {
           s.removeAttribute('data-active');
+          s.removeAttribute('data-instant');
           s.setAttribute('aria-hidden', 'true');
         }
       });
@@ -189,7 +193,7 @@ const hotspotDelay: Record<string, string> = { desk: '250ms', 'pc-innen': '450ms
       if (!gotoEl?.dataset.goto) return;
       const id = gotoEl.dataset.goto;
       if (id === 'pc-innen') {
-        playIntro(() => setScene(id));
+        playIntro(() => setScene(id, true));
       } else {
         if (video && !video.paused) video.pause();
         hideVideo();

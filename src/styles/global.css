@@ -351,6 +351,8 @@
   pointer-events: auto;
   animation: sceneIn 900ms cubic-bezier(0.16, 0.8, 0.3, 1) both;
 }
+/* Nach der Cinema-Sequenz: Szene steht sofort, nur die Hotspots blenden ein */
+.exp-scene[data-active][data-instant] { animation: none; }
 @keyframes sceneIn {
   from { opacity: 0; transform: scale(1.2); }
   30% { opacity: 1; }
@@ -476,28 +478,42 @@
   65% { transform: scale(2.3); opacity: 0; }
   100% { transform: scale(2.3); opacity: 0; }
 }
+/* Permanente Beschriftung mit Verbindungslinie zum Punkt */
 .hs-label {
   position: absolute;
-  top: calc(100% + 0.15rem);
-  left: 50%;
-  transform: translateX(-50%) translateY(5px);
   white-space: nowrap;
-  background: rgb(20 17 14 / 0.92);
-  border: 1px solid var(--color-line);
+  background: rgb(20 17 14 / 0.85);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgb(157 135 255 / 0.35);
   border-radius: 9999px;
-  padding: 0.22rem 0.65rem;
+  padding: 0.24rem 0.7rem;
   font-family: var(--font-mono);
   font-size: 0.68rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--color-paper);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 200ms ease, transform 200ms ease;
+  transition: border-color 200ms ease, background 200ms ease;
   z-index: 7;
 }
+.hs-label::before {
+  content: '';
+  position: absolute;
+  background: hsl(var(--hue-violet) / 0.65);
+}
+.hs-right .hs-label { left: calc(100% + 0.6rem); top: 50%; transform: translateY(-50%); }
+.hs-right .hs-label::before { right: 100%; top: 50%; width: 0.6rem; height: 1px; }
+.hs-left .hs-label { right: calc(100% + 0.6rem); top: 50%; transform: translateY(-50%); }
+.hs-left .hs-label::before { left: 100%; top: 50%; width: 0.6rem; height: 1px; }
+.hs-top .hs-label { bottom: calc(100% + 0.55rem); left: 50%; transform: translateX(-50%); }
+.hs-top .hs-label::before { top: 100%; left: 50%; width: 1px; height: 0.55rem; }
+.hs-bottom .hs-label { top: calc(100% + 0.55rem); left: 50%; transform: translateX(-50%); }
+.hs-bottom .hs-label::before { bottom: 100%; left: 50%; width: 1px; height: 0.55rem; }
 .hotspot:hover .hs-label,
-.hotspot:focus-visible .hs-label { opacity: 1; transform: translateX(-50%); }
+.hotspot:focus-visible .hs-label {
+  border-color: var(--color-accent);
+  background: rgb(20 17 14 / 0.95);
+}
 .hotspot:hover .hs-dot,
 .hotspot:focus-visible .hs-dot {
   transform: scale(1.2);
