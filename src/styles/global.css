@@ -320,6 +320,64 @@
 .btn-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 32px -12px rgb(237 231 222 / 0.45); }
 .btn-cta:hover::after { transform: skewX(-22deg) translateX(420%); }
 
+/* ---------- Seitliches Kategorien-Panel (nativer <dialog>) ---------- */
+dialog.drawer {
+  position: fixed;
+  inset: 0 0 0 auto;
+  height: 100dvh;
+  max-height: 100dvh;
+  width: min(22rem, 92vw);
+  max-width: 92vw;
+  margin: 0 0 0 auto;
+  padding: 0;
+  border: none;
+  border-left: 1px solid var(--color-line);
+  background: color-mix(in srgb, var(--color-coal) 94%, transparent);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  color: var(--color-paper);
+  transform: translateX(100%);
+  transition:
+    transform 380ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    display 380ms allow-discrete,
+    overlay 380ms allow-discrete;
+}
+dialog.drawer[open] { transform: none; }
+@starting-style {
+  dialog.drawer[open] { transform: translateX(100%); }
+}
+dialog.drawer::backdrop {
+  background: rgb(20 17 14 / 0.55);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  opacity: 1;
+  transition:
+    opacity 380ms ease,
+    display 380ms allow-discrete,
+    overlay 380ms allow-discrete;
+}
+@starting-style {
+  dialog.drawer[open]::backdrop { opacity: 0; }
+}
+dialog.drawer[open] .drawer-item {
+  opacity: 0;
+  transform: translateX(18px);
+  animation: drawerItem 480ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  animation-delay: var(--d, 0ms);
+}
+@keyframes drawerItem {
+  to { opacity: 1; transform: none; }
+}
+.drawer-dot {
+  color: hsl(var(--card-hue, var(--hue-violet)));
+  font-style: normal;
+  font-size: 1.05rem;
+}
+.drawer-item[aria-current='page'] {
+  background: var(--color-card);
+  outline: 1px solid var(--color-line);
+}
+
 /* ---------- Fließtext ---------- */
 .prose-mjm { max-width: 65ch; color: var(--color-paper); }
 .prose-mjm p { margin: 0 0 1em; }
@@ -341,4 +399,6 @@
   .js .io { opacity: 1; transform: none; transition: none; }
   .tilt, .artwork > img, .btn-cta { transition: none; }
   .tilt .glow { display: none; }
+  dialog.drawer, dialog.drawer::backdrop { transition: none; }
+  dialog.drawer[open] .drawer-item { animation: none; opacity: 1; transform: none; }
 }

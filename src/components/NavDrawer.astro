@@ -1,0 +1,72 @@
+---
+import { getCategories, getPublishedProducts } from '../lib/data';
+import { DISCLOSURE, href } from '../lib/site';
+
+const [categories, products] = await Promise.all([getCategories(), getPublishedProducts()]);
+const countFor = (catId: string) =>
+  products.filter((p) => p.categories.some((c) => c.id === catId)).length;
+const current = Astro.url.pathname;
+const isActive = (path: string) => current === href(path) || current === `${href(path)}/`;
+---
+
+<dialog id="nav-drawer" class="drawer" aria-label="Navigation">
+  <div class="flex h-full flex-col overflow-y-auto p-6">
+    <div class="mb-6 flex items-center justify-between">
+      <p class="meta">Menü</p>
+      <button
+        id="nav-drawer-close"
+        class="grid h-9 w-9 place-items-center rounded-full border border-line text-muted transition-colors hover:border-faint hover:text-paper"
+        aria-label="Menü schließen"
+      >✕</button>
+    </div>
+
+    <nav aria-label="Kategorien" class="flex flex-col gap-1">
+      {categories.map((c, i) => (
+        <a
+          href={href(`/${c.slug}`)}
+          aria-current={isActive(`/${c.slug}`) ? 'page' : undefined}
+          class={`drawer-item hue-${c.hue} group flex items-center gap-3 rounded-xl px-3 py-3 no-underline transition-colors hover:bg-card`}
+          style={`--d: ${80 + i * 60}ms`}
+        >
+          <span class="drawer-dot" aria-hidden="true">✳</span>
+          <span class="grow font-display text-lg font-bold transition-colors group-hover:text-accent-soft">{c.name}</span>
+          <span class="meta">{countFor(c.id)}</span>
+          <span class="text-muted transition-transform group-hover:translate-x-1" aria-hidden="true">→</span>
+        </a>
+      ))}
+    </nav>
+
+    <div class="my-5 h-px shrink-0 bg-line" aria-hidden="true"></div>
+
+    <nav aria-label="Seiten" class="flex flex-col gap-1">
+      {[
+        { path: '/empfehlungen', label: 'Top-Picks' },
+        { path: '/ueber', label: 'Über MJM Picks' },
+        { path: '/affiliate-hinweis', label: 'Affiliate-Hinweis' },
+      ].map((item, i) => (
+        <a
+          href={href(item.path)}
+          aria-current={isActive(item.path) ? 'page' : undefined}
+          class="drawer-item rounded-xl px-3 py-2 text-sm text-muted no-underline transition-colors hover:bg-card hover:text-paper"
+          style={`--d: ${340 + i * 50}ms`}
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
+
+    <p class="mt-auto shrink-0 pt-8 text-xs leading-relaxed text-faint">
+      <span class="star" aria-hidden="true">✳</span> {DISCLOSURE}
+    </p>
+  </div>
+</dialog>
+
+<script>
+  const dlg = document.getElementById('nav-drawer') as HTMLDialogElement | null;
+  document.getElementById('nav-drawer-btn')?.addEventListener('click', () => dlg?.showModal());
+  document.getElementById('nav-drawer-close')?.addEventListener('click', () => dlg?.close());
+  // Klick auf den Backdrop (Ziel = <dialog> selbst) schließt
+  dlg?.addEventListener('click', (e) => {
+    if (e.target === dlg) dlg.close();
+  });
+</script>

@@ -1,5 +1,5 @@
 ---
-import { getCategories } from '../lib/data';
+import NavDrawer from './NavDrawer.astro';
 import { BRAND, href } from '../lib/site';
 
 interface Props {
@@ -8,7 +8,6 @@ interface Props {
 }
 const { transparent = false } = Astro.props;
 
-const categories = await getCategories();
 const current = Astro.url.pathname;
 const isActive = (path: string) => current === href(path) || current === `${href(path)}/`;
 ---
@@ -22,32 +21,36 @@ const isActive = (path: string) => current === href(path) || current === `${href
   ]}
 >
   <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-6 px-4 py-3 sm:px-6">
-    <a href={href('/')} class="flex items-baseline gap-0.5 font-display text-lg font-bold tracking-tight">
+    <a href={href('/')} class="flex items-baseline gap-0.5 font-display text-lg font-bold tracking-tight no-underline">
       {BRAND}<span class="star text-xl leading-none" aria-hidden="true">✳</span>
     </a>
-    <nav aria-label="Hauptnavigation" class="-mx-1 flex items-center gap-1 overflow-x-auto px-1">
-      {categories.map((c) => (
-        <a
-          href={href(`/${c.slug}`)}
-          aria-current={isActive(`/${c.slug}`) ? 'page' : undefined}
-          class:list={[
-            'whitespace-nowrap rounded-full px-3 py-1.5 text-sm transition-colors',
-            isActive(`/${c.slug}`) ? 'bg-coal text-paper' : 'text-muted hover:text-paper',
-          ]}
-        >
-          {c.name}
-        </a>
-      ))}
+    <nav aria-label="Hauptnavigation" class="flex items-center gap-2">
       <a
         href={href('/empfehlungen')}
         aria-current={isActive('/empfehlungen') ? 'page' : undefined}
         class:list={[
-          'whitespace-nowrap rounded-full px-3 py-1.5 text-sm transition-colors',
+          'hidden whitespace-nowrap rounded-full px-3 py-1.5 text-sm transition-colors sm:inline-block',
           isActive('/empfehlungen') ? 'bg-coal text-paper' : 'text-muted hover:text-paper',
         ]}
       >
         Top-Picks
       </a>
+      <button
+        id="nav-drawer-btn"
+        aria-haspopup="dialog"
+        aria-controls="nav-drawer"
+        class="flex items-center gap-2 rounded-full border border-faint/50 px-4 py-1.5 text-sm text-paper transition-colors hover:border-accent hover:text-accent-soft"
+      >
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
+          <rect x="0" y="0" width="6" height="6" rx="1.5" />
+          <rect x="8" y="0" width="6" height="6" rx="1.5" />
+          <rect x="0" y="8" width="6" height="6" rx="1.5" />
+          <rect x="8" y="8" width="6" height="6" rx="1.5" />
+        </svg>
+        Kategorien
+      </button>
     </nav>
   </div>
 </header>
+
+<NavDrawer />
