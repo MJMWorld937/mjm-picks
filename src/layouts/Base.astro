@@ -1,0 +1,65 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { BRAND } from '../lib/site';
+
+interface Props {
+  title: string;
+  description: string;
+  /** true bei Admin & 404 */
+  noindex?: boolean;
+  /** zusätzliches JSON-LD (BreadcrumbList, Product …) */
+  jsonLd?: object[];
+}
+
+const { title, description, noindex = false, jsonLd = [] } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+// Staging (github.io) nie indexieren — verhindert Duplicate Content vor dem Domain-Umzug
+const isStaging = Astro.site?.hostname.endsWith('github.io') ?? false;
+const fullTitle = title === BRAND ? `${BRAND} ✳ Handverlesene Tech-Empfehlungen` : `${title} · ${BRAND}`;
+
+const baseJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: BRAND,
+  url: Astro.site?.toString(),
+  inLanguage: 'de-DE',
+};
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {(noindex || isStaging) && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="icon" href={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/favicon.svg`} type="image/svg+xml" />
+    <meta name="theme-color" content="#14110e" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content={BRAND} />
+    <meta property="og:locale" content="de_DE" />
+    <meta name="twitter:card" content="summary" />
+    <script type="application/ld+json" set:html={JSON.stringify(baseJsonLd)} />
+    {jsonLd.map((obj) => <script type="application/ld+json" set:html={JSON.stringify(obj)} />)}
+  </head>
+  <body class="bg-ink text-paper antialiased">
+    <a
+      href="#inhalt"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-accent focus:text-ink focus:px-4 focus:py-2 focus:rounded"
+    >
+      Zum Inhalt springen
+    </a>
+    <Header />
+    <main id="inhalt" class="mx-auto w-full max-w-6xl px-4 sm:px-6">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

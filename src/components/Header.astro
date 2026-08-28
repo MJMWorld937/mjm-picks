@@ -1,0 +1,40 @@
+---
+import { getCategories } from '../lib/data';
+import { BRAND, href } from '../lib/site';
+
+const categories = await getCategories();
+const current = Astro.url.pathname;
+const isActive = (path: string) => current === href(path) || current === `${href(path)}/`;
+---
+
+<header class="sticky top-0 z-40 border-b border-line bg-ink/85 backdrop-blur-md">
+  <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-6 px-4 py-3 sm:px-6">
+    <a href={href('/')} class="flex items-baseline gap-0.5 font-display text-lg font-bold tracking-tight">
+      {BRAND}<span class="star text-xl leading-none" aria-hidden="true">✳</span>
+    </a>
+    <nav aria-label="Hauptnavigation" class="-mx-1 flex items-center gap-1 overflow-x-auto px-1">
+      {categories.map((c) => (
+        <a
+          href={href(`/${c.slug}`)}
+          aria-current={isActive(`/${c.slug}`) ? 'page' : undefined}
+          class:list={[
+            'whitespace-nowrap rounded-full px-3 py-1.5 text-sm transition-colors',
+            isActive(`/${c.slug}`) ? 'bg-coal text-paper' : 'text-muted hover:text-paper',
+          ]}
+        >
+          {c.name}
+        </a>
+      ))}
+      <a
+        href={href('/empfehlungen')}
+        aria-current={isActive('/empfehlungen') ? 'page' : undefined}
+        class:list={[
+          'whitespace-nowrap rounded-full px-3 py-1.5 text-sm transition-colors',
+          isActive('/empfehlungen') ? 'bg-coal text-paper' : 'text-muted hover:text-paper',
+        ]}
+      >
+        Top-Picks
+      </a>
+    </nav>
+  </div>
+</header>

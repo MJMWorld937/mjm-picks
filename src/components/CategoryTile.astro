@@ -1,0 +1,20 @@
+---
+import type { Category } from '../lib/types';
+import { href } from '../lib/site';
+
+interface Props {
+  category: Category;
+  count: number;
+}
+const { category, count } = Astro.props;
+---
+
+<a
+  href={href(`/${category.slug}`)}
+  class={`card-link artwork hue-${category.hue} group relative flex min-h-36 flex-col justify-end overflow-hidden rounded-2xl border border-line p-5 no-underline`}
+>
+  <p class="meta relative z-10">{count} {count === 1 ? 'Pick' : 'Picks'}</p>
+  <h3 class="relative z-10 font-display text-2xl font-bold group-hover:text-accent-soft transition-colors">
+    {category.name}
+  </h3>
+</a>

@@ -1,0 +1,38 @@
+---
+interface Props {
+  pros: string[];
+  cons: string[];
+}
+const { pros, cons } = Astro.props;
+---
+
+{(pros.length > 0 || cons.length > 0) && (
+  <div class="grid gap-4 sm:grid-cols-2">
+    {pros.length > 0 && (
+      <section class="rounded-2xl border border-line bg-card p-5">
+        <h3 class="meta mb-3 text-paper!">Stärken</h3>
+        <ul class="space-y-2 text-sm">
+          {pros.map((p) => (
+            <li class="flex gap-2">
+              <span class="star shrink-0" aria-hidden="true">✳</span>
+              <span>{p}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+    {cons.length > 0 && (
+      <section class="rounded-2xl border border-line bg-card p-5">
+        <h3 class="meta mb-3 text-paper!">Schwächen</h3>
+        <ul class="space-y-2 text-sm text-muted">
+          {cons.map((c) => (
+            <li class="flex gap-2">
+              <span class="shrink-0" aria-hidden="true">—</span>
+              <span>{c}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+  </div>
+)}

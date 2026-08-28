@@ -1,0 +1,39 @@
+---
+import Base from '../layouts/Base.astro';
+import { BRAND, href } from '../lib/site';
+---
+
+<Base
+  title="Über MJM Picks"
+  description="Wer hier kuratiert, nach welchen Kriterien ausgewählt wird — und was MJM Picks bewusst nicht macht."
+>
+  <section class="py-12 sm:py-16">
+    <h1 class="text-3xl sm:text-5xl">Über {BRAND}<span class="star" aria-hidden="true">✳</span></h1>
+    <div class="prose-mjm mt-8">
+      <p>
+        {BRAND} ist ein kuratiertes Empfehlungsportal für Technik — betrieben von einer Person,
+        nicht von einer Content-Fabrik. Jedes Produkt hier wurde bewusst ausgewählt, weil es in
+        seiner Kategorie eine klare Empfehlung verdient.
+      </p>
+      <h2>Nach welchen Kriterien ich auswähle</h2>
+      <ul>
+        <li><strong>Preis-Leistung vor Prestige:</strong> Das teuerste Produkt ist selten der beste Pick.</li>
+        <li><strong>Langlebigkeit:</strong> Lieber Technik, die Jahre hält, als der neueste Hype.</li>
+        <li><strong>Alltagstauglichkeit:</strong> Was nützt ein Datenblatt, wenn die Bedienung nervt?</li>
+        <li><strong>Ehrliche Schwächen:</strong> Jeder Pick nennt auch, was nicht überzeugt — und für wen er nichts ist.</li>
+      </ul>
+      <h2>Was diese Seite bewusst nicht macht</h2>
+      <ul>
+        <li>Keine erfundenen „Testberichte" — was ich nicht selbst ausprobiert habe, wird auch nicht so genannt.</li>
+        <li>Keine Preisanzeigen, die veraltet sein könnten — den aktuellen Preis siehst du immer direkt bei Amazon.</li>
+        <li>Kein Tracking, keine Cookies, keine Newsletter-Pop-ups.</li>
+      </ul>
+      <h2>Wie sich diese Seite finanziert</h2>
+      <p>
+        Über Affiliate-Links: Kaufst du über einen Link auf dieser Seite bei Amazon ein, erhalte
+        ich eine kleine Provision. Für dich ändert sich am Preis nichts. Alle Details stehen im
+        <a href={href('/affiliate-hinweis')}>Affiliate-Hinweis</a>.
+      </p>
+    </div>
+  </section>
+</Base>

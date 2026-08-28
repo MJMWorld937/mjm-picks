@@ -1,0 +1,60 @@
+---
+import Base from '../layouts/Base.astro';
+import ProductCard from '../components/ProductCard.astro';
+import { getCategories, getPublishedProducts } from '../lib/data';
+import { BRAND, href } from '../lib/site';
+import type { Category } from '../lib/types';
+
+export async function getStaticPaths() {
+  const categories = await getCategories();
+  return categories.map((category) => ({
+    params: { category: category.slug },
+    props: { category },
+  }));
+}
+
+interface Props {
+  category: Category;
+}
+const { category } = Astro.props;
+const products = (await getPublishedProducts()).filter((p) =>
+  p.categories.some((c) => c.id === category.id)
+);
+
+const breadcrumbLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: BRAND, item: new URL(href('/'), Astro.site).toString() },
+    { '@type': 'ListItem', position: 2, name: category.name, item: new URL(href(`/${category.slug}`), Astro.site).toString() },
+  ],
+};
+---
+
+<Base
+  title={category.name}
+  description={`${category.name}-Empfehlungen auf ${BRAND}: ${category.description}`}
+  jsonLd={[breadcrumbLd]}
+>
+  <nav aria-label="Brotkrumen" class="pt-8 text-sm text-muted">
+    <a href={href('/')} class="hover:text-paper">Start</a>
+    <span aria-hidden="true"> / </span>
+    <span aria-current="page">{category.name}</span>
+  </nav>
+
+  <section class="py-10 sm:py-14">
+    <h1 class="text-3xl sm:text-5xl">{category.name}</h1>
+    <p class="mt-4 max-w-xl text-lg text-muted">{category.description}</p>
+  </section>
+
+  {products.length > 0 ? (
+    <div class="grid gap-5 pb-8 sm:grid-cols-2 lg:grid-cols-3">
+      {products.map((p, i) => <ProductCard product={p} index={i} />)}
+    </div>
+  ) : (
+    <section class="mb-8 rounded-2xl border border-line bg-coal p-8 text-muted">
+      <p>In dieser Kategorie ist noch kein Pick eingezogen. Schau bald wieder vorbei —
+      oder stöbere solange in den <a class="text-accent-soft underline" href={href('/empfehlungen')}>Top-Picks</a>.</p>
+    </section>
+  )}
+</Base>

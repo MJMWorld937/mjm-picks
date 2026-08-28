@@ -1,0 +1,35 @@
+---
+import Base from '../layouts/Base.astro';
+import { BRAND, DISCLOSURE } from '../lib/site';
+---
+
+<Base
+  title="Affiliate-Hinweis"
+  description="Transparenz: Wie Affiliate-Links auf MJM Picks funktionieren und wie sich diese Seite finanziert."
+>
+  <section class="py-12 sm:py-16">
+    <h1 class="text-3xl sm:text-5xl">Affiliate-Hinweis<span class="star" aria-hidden="true">✳</span></h1>
+    <div class="prose-mjm mt-8">
+      <p class="text-lg"><strong>{DISCLOSURE}</strong></p>
+      <h2>Was das konkret bedeutet</h2>
+      <p>
+        {BRAND} nimmt am Amazon-Partnerprogramm (Amazon PartnerNet) teil. Links zu Amazon auf
+        dieser Seite sind sogenannte Affiliate-Links und entsprechend als „Anzeige" bzw.
+        „Bezahlter Link" gekennzeichnet. Kaufst du nach einem Klick auf so einen Link bei Amazon
+        ein, erhalte ich eine Provision vom Händler. <strong>Für dich ändert sich am Preis nichts.</strong>
+      </p>
+      <h2>Was das nicht bedeutet</h2>
+      <ul>
+        <li>Kein Hersteller bezahlt dafür, hier zu erscheinen — die Auswahl treffe ich selbst.</li>
+        <li>Die Provision ist bei fast allen Produkten einer Kategorie gleich; sie beeinflusst nicht, welches Produkt ich empfehle.</li>
+        <li>Der Kauf selbst findet vollständig bei Amazon statt — diese Seite verarbeitet weder Bestellungen noch Zahlungsdaten.</li>
+      </ul>
+      <h2>Preise</h2>
+      <p>
+        Bewusst zeige ich hier keine Preise an: Preise ändern sich bei Amazon laufend, und eine
+        veraltete Zahl wäre irreführender als keine. Den aktuellen Preis und die Verfügbarkeit
+        siehst du immer direkt bei Amazon.
+      </p>
+    </div>
+  </section>
+</Base>

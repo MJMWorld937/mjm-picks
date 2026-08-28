@@ -1,0 +1,33 @@
+---
+import type { AffiliateOffer } from '../lib/types';
+import { DISCLOSURE } from '../lib/site';
+
+interface Props {
+  offer: AffiliateOffer;
+}
+const { offer } = Astro.props;
+---
+
+<div class="rounded-2xl border border-line bg-coal p-5">
+  {offer.url ? (
+    <>
+      <p class="meta mb-3">Anzeige · Bezahlter Link</p>
+      <a
+        href={offer.url}
+        rel="sponsored noopener noreferrer"
+        target="_blank"
+        class="block w-full rounded-xl bg-paper px-5 py-3.5 text-center font-display text-base font-bold text-ink no-underline transition-transform hover:-translate-y-0.5"
+      >
+        {offer.label} ↗
+      </a>
+      <p class="mt-3 text-xs leading-relaxed text-muted">
+        Aktuellen Preis und Verfügbarkeit siehst du direkt bei {offer.providerName}.
+        <span class="star" aria-hidden="true">✳</span> {DISCLOSURE}
+      </p>
+    </>
+  ) : (
+    <p class="text-sm text-muted">
+      Der {offer.providerName}-Link folgt in Kürze — dieser Pick ist gerade frisch eingezogen.
+    </p>
+  )}
+</div>

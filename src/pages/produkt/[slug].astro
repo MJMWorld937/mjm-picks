@@ -1,0 +1,156 @@
+---
+import Base from '../../layouts/Base.astro';
+import AmazonCta from '../../components/AmazonCta.astro';
+import ProsCons from '../../components/ProsCons.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import { getPartnerTag, getPublishedProducts } from '../../lib/data';
+import { getAmazonOffer } from '../../lib/providers/amazon';
+import { BRAND, href } from '../../lib/site';
+import type { AffiliateProduct } from '../../lib/types';
+
+export async function getStaticPaths() {
+  const products = await getPublishedProducts();
+  return products.map((product) => ({ params: { slug: product.slug }, props: { product } }));
+}
+
+interface Props {
+  product: AffiliateProduct;
+}
+const { product } = Astro.props;
+const partnerTag = await getPartnerTag();
+const offer = getAmazonOffer(product, partnerTag);
+const cat = product.categories[0];
+const pickNo = String(product.pickNo).padStart(2, '0');
+const ed = product.editorial;
+
+const all = await getPublishedProducts();
+const alternative = all.find((p) => p.id === (ed as any).alternative_product_id) ?? null;
+const related = all
+  .filter((p) => p.id !== product.id && p.categories.some((c) => cat && c.id === cat.id))
+  .slice(0, 3);
+
+const productLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: product.title,
+  ...(product.brand ? { brand: { '@type': 'Brand', name: product.brand } } : {}),
+  ...(cat ? { category: cat.name } : {}),
+  url: new URL(href(`/produkt/${product.slug}`), Astro.site).toString(),
+};
+const breadcrumbLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: BRAND, item: new URL(href('/'), Astro.site).toString() },
+    ...(cat
+      ? [{ '@type': 'ListItem', position: 2, name: cat.name, item: new URL(href(`/${cat.slug}`), Astro.site).toString() }]
+      : []),
+    { '@type': 'ListItem', position: cat ? 3 : 2, name: product.title, item: new URL(href(`/produkt/${product.slug}`), Astro.site).toString() },
+  ],
+};
+---
+
+<Base
+  title={product.title}
+  description={ed.summary || `${product.title} — eine Empfehlung auf ${BRAND}.`}
+  jsonLd={[productLd, breadcrumbLd]}
+>
+  <nav aria-label="Brotkrumen" class="pt-8 text-sm text-muted">
+    <a href={href('/')} class="hover:text-paper">Start</a>
+    {cat && (
+      <>
+        <span aria-hidden="true"> / </span>
+        <a href={href(`/${cat.slug}`)} class="hover:text-paper">{cat.name}</a>
+      </>
+    )}
+    <span aria-hidden="true"> / </span>
+    <span aria-current="page">{product.title}</span>
+  </nav>
+
+  <div class="grid gap-10 py-10 lg:grid-cols-[1fr_20rem]">
+    <article>
+      <p class="meta">
+        {cat?.name ?? 'Pick'} · Pick №{pickNo}{product.brand && ` · ${product.brand}`}
+      </p>
+      <h1 class="mt-3 text-3xl sm:text-5xl">{product.title}</h1>
+      {ed.summary && <p class="mt-5 max-w-2xl text-lg text-muted">{ed.summary}</p>}
+
+      <div class={`artwork hue-${cat?.hue ?? 'violet'} mt-8 aspect-[16/9] rounded-2xl border border-line`}>
+        {product.imageUrl ? (
+          <img
+            src={product.imageUrl}
+            alt={product.title}
+            loading="eager"
+            decoding="async"
+            class="absolute inset-0 h-full w-full object-contain p-8"
+          />
+        ) : (
+          <span class="ghost-no" aria-hidden="true">{pickNo}</span>
+        )}
+      </div>
+
+      <div class="prose-mjm mt-10">
+        {ed.recommendation && (
+          <>
+            <h2>Warum ich es empfehle</h2>
+            {ed.recommendation.split(/\n{2,}/).map((para) => <p>{para}</p>)}
+          </>
+        )}
+      </div>
+
+      {(ed.suited_for || ed.not_suited_for) && (
+        <div class="mt-8 grid gap-4 sm:grid-cols-2">
+          {ed.suited_for && (
+            <section class="rounded-2xl border border-line bg-card p-5">
+              <h2 class="meta mb-2 text-paper!">Passt zu dir, wenn …</h2>
+              <p class="text-sm leading-relaxed">{ed.suited_for}</p>
+            </section>
+          )}
+          {ed.not_suited_for && (
+            <section class="rounded-2xl border border-line bg-card p-5">
+              <h2 class="meta mb-2 text-paper!">Eher nichts für dich, wenn …</h2>
+              <p class="text-sm leading-relaxed text-muted">{ed.not_suited_for}</p>
+            </section>
+          )}
+        </div>
+      )}
+
+      <div class="mt-8">
+        <ProsCons pros={ed.pros} cons={ed.cons} />
+      </div>
+
+      {ed.verdict && (
+        <section class="mt-8 rounded-2xl border-l-4 border-accent bg-coal p-6">
+          <h2 class="meta mb-2 text-paper!">Meine Einschätzung</h2>
+          <p class="text-base leading-relaxed">{ed.verdict}</p>
+        </section>
+      )}
+
+      {alternative && (
+        <p class="mt-8 text-sm text-muted">
+          Alternative im Regal:
+          <a class="text-accent-soft underline underline-offset-2" href={href(`/produkt/${alternative.slug}`)}>
+            {alternative.title}
+          </a>
+        </p>
+      )}
+    </article>
+
+    <aside class="lg:sticky lg:top-24 lg:self-start">
+      <AmazonCta offer={offer} />
+      <p class="mt-4 text-xs leading-relaxed text-faint">
+        Diese Einschätzung ist redaktionell und basiert auf sorgfältiger Auswahl — nicht auf einem
+        Labortest. Was ich selbst ausprobiert habe, kennzeichne ich ausdrücklich.
+      </p>
+    </aside>
+  </div>
+
+  {related.length > 0 && (
+    <section aria-labelledby="mehr" class="border-t border-line py-12">
+      <h2 id="mehr" class="mb-6 text-2xl">Mehr aus {cat?.name}</h2>
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {related.map((p, i) => <ProductCard product={p} index={i} />)}
+      </div>
+    </section>
+  )}
+</Base>

@@ -1,0 +1,43 @@
+---
+import Base from '../layouts/Base.astro';
+import ProductCard from '../components/ProductCard.astro';
+import { getPublishedProducts } from '../lib/data';
+import { href } from '../lib/site';
+
+const products = await getPublishedProducts();
+const featured = products.filter((p) => p.featured);
+const rest = products.filter((p) => !p.featured);
+---
+
+<Base
+  title="Top-Picks"
+  description="Alle handverlesenen Empfehlungen auf einen Blick — kuratiert, ehrlich eingeordnet und regelmäßig überprüft."
+>
+  <section class="py-12 sm:py-16">
+    <h1 class="text-3xl sm:text-5xl">Top-Picks</h1>
+    <p class="mt-4 max-w-xl text-lg text-muted">
+      Das komplette Regal. Ganz oben: die Picks, hinter denen ich am meisten stehe.
+    </p>
+  </section>
+
+  {featured.length > 0 && (
+    <div class="grid gap-5 pb-10 sm:grid-cols-2 lg:grid-cols-3">
+      {featured.map((p, i) => <ProductCard product={p} index={i} />)}
+    </div>
+  )}
+
+  {rest.length > 0 && (
+    <>
+      <h2 class="mb-6 text-2xl">Alle weiteren Picks</h2>
+      <div class="grid gap-5 pb-8 sm:grid-cols-2 lg:grid-cols-3">
+        {rest.map((p, i) => <ProductCard product={p} index={i} />)}
+      </div>
+    </>
+  )}
+
+  {products.length === 0 && (
+    <section class="mb-8 rounded-2xl border border-line bg-coal p-8 text-muted">
+      <p>Noch keine Picks veröffentlicht — die ersten sind in Arbeit. Bis dahin: <a class="text-accent-soft underline" href={href('/ueber')}>Worum es hier geht.</a></p>
+    </section>
+  )}
+</Base>

@@ -1,0 +1,66 @@
+---
+import Base from '../layouts/Base.astro';
+import ProductCard from '../components/ProductCard.astro';
+import CategoryTile from '../components/CategoryTile.astro';
+import { getCategories, getPublishedProducts } from '../lib/data';
+import { BRAND, DISCLOSURE, href } from '../lib/site';
+
+const [categories, products] = await Promise.all([getCategories(), getPublishedProducts()]);
+const featured = products.filter((p) => p.featured).slice(0, 3);
+const latest = products.filter((p) => !featured.includes(p)).slice(0, 6);
+const countFor = (catId: string) =>
+  products.filter((p) => p.categories.some((c) => c.id === catId)).length;
+---
+
+<Base
+  title={BRAND}
+  description="Handverlesene Tech-Empfehlungen mit ehrlicher Einschätzung — Gaming, PC-Hardware, Smart Home und Technik. Jeder Pick eine bewusste Auswahl, keine Fake-Tests."
+>
+  <section class="py-16 sm:py-24">
+    <p class="meta reveal">Handverlesen statt hochgeladen</p>
+    <h1 class="reveal mt-4 max-w-3xl text-4xl sm:text-6xl" style="--reveal-delay: 80ms">
+      Tech, die ich dir auch persönlich empfehlen würde<span class="star" aria-hidden="true">✳</span>
+    </h1>
+    <p class="reveal mt-6 max-w-xl text-lg text-muted" style="--reveal-delay: 160ms">
+      Keine Fake-Tests, keine hundert Vergleichstabellen. Jeder Pick hier ist eine bewusste
+      Auswahl — mit ehrlicher Einschätzung, wofür er taugt und wofür nicht.
+    </p>
+    <p class="reveal mt-8 max-w-xl text-sm text-faint" style="--reveal-delay: 240ms">
+      <span class="star" aria-hidden="true">✳</span> Das Sternchen steht für Transparenz:&nbsp;{DISCLOSURE}
+    </p>
+  </section>
+
+  {featured.length > 0 && (
+    <section aria-labelledby="top-picks" class="py-8">
+      <div class="mb-6 flex items-baseline justify-between gap-4">
+        <h2 id="top-picks" class="text-2xl sm:text-3xl">Top-Picks</h2>
+        <a href={href('/empfehlungen')} class="text-sm text-accent-soft hover:underline">Alle ansehen →</a>
+      </div>
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {featured.map((p, i) => <ProductCard product={p} index={i} />)}
+      </div>
+    </section>
+  )}
+
+  <section aria-labelledby="kategorien" class="py-8">
+    <h2 id="kategorien" class="mb-6 text-2xl sm:text-3xl">Kategorien</h2>
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {categories.map((c) => <CategoryTile category={c} count={countFor(c.id)} />)}
+    </div>
+  </section>
+
+  {latest.length > 0 && (
+    <section aria-labelledby="neu" class="py-8">
+      <h2 id="neu" class="mb-6 text-2xl sm:text-3xl">Neu im Regal</h2>
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {latest.map((p, i) => <ProductCard product={p} index={i} />)}
+      </div>
+    </section>
+  )}
+
+  {products.length === 0 && (
+    <section class="rounded-2xl border border-line bg-coal p-8 text-muted">
+      <p>Das Regal füllt sich gerade — die ersten Picks sind unterwegs.</p>
+    </section>
+  )}
+</Base>

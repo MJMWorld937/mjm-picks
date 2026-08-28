@@ -1,0 +1,61 @@
+---
+import type { AffiliateProduct } from '../lib/types';
+import { href } from '../lib/site';
+
+interface Props {
+  product: AffiliateProduct;
+  /** Index für gestaffelte Einblendung */
+  index?: number;
+}
+
+const { product, index = 0 } = Astro.props;
+const cat = product.categories[0];
+const hue = cat?.hue ?? 'violet';
+const pickNo = String(product.pickNo).padStart(2, '0');
+const topPros = product.editorial.pros.slice(0, 3);
+---
+
+<article class="reveal" style={`--reveal-delay: ${Math.min(index, 6) * 70}ms`}>
+  <a
+    href={href(`/produkt/${product.slug}`)}
+    class={`card-link group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-card no-underline`}
+  >
+    <div class={`artwork hue-${hue} aspect-[16/9]`}>
+      {product.imageUrl ? (
+        <img
+          src={product.imageUrl}
+          alt={product.title}
+          loading="lazy"
+          decoding="async"
+          class="absolute inset-0 h-full w-full object-contain p-6"
+        />
+      ) : (
+        <span class="ghost-no" aria-hidden="true">{pickNo}</span>
+      )}
+    </div>
+    <div class="flex grow flex-col gap-3 p-5">
+      <p class="meta">
+        {cat?.name ?? 'Pick'} · Pick №{pickNo}
+      </p>
+      <h3 class="font-display text-xl font-bold leading-snug group-hover:text-accent-soft transition-colors">
+        {product.title}
+      </h3>
+      {product.editorial.summary && (
+        <p class="text-sm leading-relaxed text-muted">{product.editorial.summary}</p>
+      )}
+      {topPros.length > 0 && (
+        <ul class="mt-auto space-y-1 pt-1 text-sm">
+          {topPros.map((pro) => (
+            <li class="flex gap-2">
+              <span class="star shrink-0" aria-hidden="true">✳</span>
+              <span>{pro}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <span class="pt-2 text-sm font-medium text-accent-soft">
+        Warum ich es empfehle →
+      </span>
+    </div>
+  </a>
+</article>

@@ -1,0 +1,34 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="Impressum"
+  description="Impressum und Anbieterkennzeichnung nach § 5 DDG."
+  noindex={true}
+>
+  <section class="py-12 sm:py-16">
+    <h1 class="text-3xl sm:text-5xl">Impressum</h1>
+    <div class="prose-mjm mt-8">
+      <h2>Angaben gemäß § 5 DDG</h2>
+      <p>
+        [VORNAME NACHNAME]<br />
+        [STRASSE HAUSNUMMER]<br />
+        [PLZ ORT]<br />
+        Deutschland
+      </p>
+      <h2>Kontakt</h2>
+      <p>
+        E-Mail: [E-MAIL-ADRESSE]<br />
+        [OPTIONAL: TELEFONNUMMER]
+      </p>
+      <h2>Verantwortlich für den Inhalt</h2>
+      <p>[VORNAME NACHNAME], Anschrift wie oben.</p>
+      <p class="text-sm text-faint">
+        Hinweis: Diese Seite ist eine Vorlage und ersetzt keine Rechtsberatung. Die Platzhalter
+        müssen vor Veröffentlichung mit den echten Angaben gefüllt werden — ohne vollständiges
+        Impressum darf die Seite nicht live gehen.
+      </p>
+    </div>
+  </section>
+</Base>

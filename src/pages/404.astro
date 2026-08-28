@@ -1,0 +1,20 @@
+---
+import Base from '../layouts/Base.astro';
+import { href } from '../lib/site';
+---
+
+<Base title="Seite nicht gefunden" description="Diese Seite existiert nicht." noindex={true}>
+  <section class="py-24 text-center">
+    <p class="meta">Fehler 404</p>
+    <h1 class="mt-4 text-4xl sm:text-6xl">Dieser Pick existiert nicht<span class="star" aria-hidden="true">✳</span></h1>
+    <p class="mx-auto mt-6 max-w-md text-muted">
+      Die Seite wurde verschoben oder war nie da. Im Regal findest du alles, was es wirklich gibt.
+    </p>
+    <a
+      href={href('/')}
+      class="mt-8 inline-block rounded-xl bg-paper px-6 py-3 font-display font-bold text-ink no-underline"
+    >
+      Zur Startseite
+    </a>
+  </section>
+</Base>

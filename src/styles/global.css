@@ -1,0 +1,173 @@
+/* MJM Picks — Designsystem
+   Warmes Graphit, Papierton, Flieder-Akzent. Signatur: das ✳ (Offenlegung als Marke). */
+
+@import '@fontsource/space-grotesk/500.css';
+@import '@fontsource/space-grotesk/700.css';
+@import '@fontsource/ibm-plex-sans/400.css';
+@import '@fontsource/ibm-plex-sans/400-italic.css';
+@import '@fontsource/ibm-plex-sans/500.css';
+@import '@fontsource/ibm-plex-sans/600.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+
+@import 'tailwindcss';
+
+@theme {
+  --color-ink: #14110e;
+  --color-coal: #1d1915;
+  --color-card: #201c17;
+  --color-line: #2e2822;
+  --color-paper: #ede7de;
+  --color-muted: #a69c8f;
+  --color-faint: #6e655a;
+  --color-accent: #9d87ff;
+  --color-accent-soft: #b3a2ff;
+
+  --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', monospace;
+}
+
+/* Kategorie-Farbwelten (nur fürs Karten-Artwork, sparsam) */
+:root {
+  --hue-violet: 258 65% 68%;
+  --hue-cyan: 194 60% 60%;
+  --hue-green: 152 40% 58%;
+  --hue-amber: 38 70% 62%;
+}
+
+html {
+  background-color: var(--color-ink);
+  color: var(--color-paper);
+  font-family: var(--font-sans);
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  line-height: 1.6;
+  font-size: 1rem;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-ink);
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+  margin: 0;
+}
+
+a { color: inherit; }
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Das Marken-Sternchen */
+.star {
+  color: var(--color-accent);
+  font-style: normal;
+}
+
+/* Meta-Label in Mono (Pick-Nr., Kategorie, Kennzeichnungen) */
+.meta {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+/* Karten-Artwork: Farbfläche mit Korn + geisterhafter Pick-Nummer */
+.artwork {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 15% 0%, hsl(var(--card-hue) / 0.32), transparent 60%),
+    radial-gradient(120% 120% at 100% 100%, hsl(var(--card-hue) / 0.14), transparent 55%),
+    var(--color-card);
+}
+.artwork::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.artwork .ghost-no {
+  position: absolute;
+  right: -0.06em;
+  bottom: -0.28em;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(4.5rem, 9vw, 7rem);
+  line-height: 1;
+  color: hsl(var(--card-hue) / 0.2);
+  user-select: none;
+}
+
+.hue-violet { --card-hue: var(--hue-violet); }
+.hue-cyan   { --card-hue: var(--hue-cyan); }
+.hue-green  { --card-hue: var(--hue-green); }
+.hue-amber  { --card-hue: var(--hue-amber); }
+
+/* Karten-Interaktion */
+.card-link {
+  transition: transform 200ms ease, border-color 200ms ease;
+}
+@media (hover: hover) {
+  .card-link:hover {
+    transform: translateY(-3px);
+    border-color: var(--color-faint);
+  }
+}
+
+/* Einblendung beim Laden — respektiert Reduced Motion */
+.reveal {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: reveal 500ms ease forwards;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+@keyframes reveal {
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { animation: none; opacity: 1; transform: none; }
+  .card-link { transition: none; }
+}
+
+/* Fließtext auf Produkt-/Infoseiten */
+.prose-mjm {
+  max-width: 65ch;
+  color: var(--color-paper);
+}
+.prose-mjm p { margin: 0 0 1em; }
+.prose-mjm h2 {
+  font-size: 1.35rem;
+  margin: 2.2em 0 0.7em;
+}
+.prose-mjm h3 {
+  font-size: 1.05rem;
+  margin: 1.8em 0 0.5em;
+}
+.prose-mjm ul { padding-left: 1.2em; margin: 0 0 1em; }
+.prose-mjm li { margin-bottom: 0.35em; }
+.prose-mjm a {
+  color: var(--color-accent-soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
