@@ -2,12 +2,25 @@
 import { getCategories } from '../lib/data';
 import { BRAND, href } from '../lib/site';
 
+interface Props {
+  /** über Full-Bleed-Hero: absolut + durchsichtig statt sticky Glas */
+  transparent?: boolean;
+}
+const { transparent = false } = Astro.props;
+
 const categories = await getCategories();
 const current = Astro.url.pathname;
 const isActive = (path: string) => current === href(path) || current === `${href(path)}/`;
 ---
 
-<header class="sticky top-0 z-40 border-b border-line bg-ink/85 backdrop-blur-md">
+<header
+  class:list={[
+    'z-40',
+    transparent
+      ? 'absolute inset-x-0 top-0 bg-gradient-to-b from-ink/70 to-transparent'
+      : 'sticky top-0 border-b border-line bg-ink/85 backdrop-blur-md',
+  ]}
+>
   <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-6 px-4 py-3 sm:px-6">
     <a href={href('/')} class="flex items-baseline gap-0.5 font-display text-lg font-bold tracking-tight">
       {BRAND}<span class="star text-xl leading-none" aria-hidden="true">✳</span>

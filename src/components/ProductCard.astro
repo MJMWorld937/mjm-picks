@@ -1,5 +1,7 @@
 ---
+import { Image } from 'astro:assets';
 import type { AffiliateProduct } from '../lib/types';
+import { categoryArt } from '../lib/art';
 import { href } from '../lib/site';
 
 interface Props {
@@ -11,15 +13,17 @@ interface Props {
 const { product, index = 0 } = Astro.props;
 const cat = product.categories[0];
 const hue = cat?.hue ?? 'violet';
+const art = categoryArt(cat?.slug);
 const pickNo = String(product.pickNo).padStart(2, '0');
 const topPros = product.editorial.pros.slice(0, 3);
 ---
 
-<article class="reveal" style={`--reveal-delay: ${Math.min(index, 6) * 70}ms`}>
+<article class="io" style={`--d: ${Math.min(index, 6) * 90}ms`}>
   <a
     href={href(`/produkt/${product.slug}`)}
-    class={`card-link group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-card no-underline`}
+    class={`tilt hue-${hue} group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-card no-underline`}
   >
+    <span class="glow" aria-hidden="true"></span>
     <div class={`artwork hue-${hue} aspect-[16/9]`}>
       {product.imageUrl ? (
         <img
@@ -27,17 +31,30 @@ const topPros = product.editorial.pros.slice(0, 3);
           alt={product.title}
           loading="lazy"
           decoding="async"
-          class="absolute inset-0 h-full w-full object-contain p-6"
+          class="prod-img"
         />
       ) : (
-        <span class="ghost-no" aria-hidden="true">{pickNo}</span>
+        <>
+          {art && (
+            <Image
+              src={art}
+              alt=""
+              widths={[480, 768, 1080]}
+              sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 92vw"
+              loading="lazy"
+              quality={70}
+            />
+          )}
+          <span class="tint" aria-hidden="true"></span>
+          <span class="ghost-no" aria-hidden="true">{pickNo}</span>
+        </>
       )}
     </div>
     <div class="flex grow flex-col gap-3 p-5">
       <p class="meta">
         {cat?.name ?? 'Pick'} · Pick №{pickNo}
       </p>
-      <h3 class="font-display text-xl font-bold leading-snug group-hover:text-accent-soft transition-colors">
+      <h3 class="font-display text-xl font-bold leading-snug transition-colors group-hover:text-accent-soft">
         {product.title}
       </h3>
       {product.editorial.summary && (

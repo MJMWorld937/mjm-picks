@@ -1,8 +1,10 @@
 ---
+import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import ProductCard from '../components/ProductCard.astro';
 import CategoryTile from '../components/CategoryTile.astro';
 import { getCategories, getPublishedProducts } from '../lib/data';
+import { heroArt } from '../lib/art';
 import { BRAND, DISCLOSURE, href } from '../lib/site';
 
 const [categories, products] = await Promise.all([getCategories(), getPublishedProducts()]);
@@ -10,30 +12,75 @@ const featured = products.filter((p) => p.featured).slice(0, 3);
 const latest = products.filter((p) => !featured.includes(p)).slice(0, 6);
 const countFor = (catId: string) =>
   products.filter((p) => p.categories.some((c) => c.id === catId)).length;
+
+const headline = 'Tech, die ich dir auch persönlich empfehlen würde';
+const words = headline.split(' ');
+const marqueeItems = ['Handverlesen', 'Ehrlich eingeordnet', 'Keine Fake-Tests', 'Kein Tracking', 'Jeder Pick nummeriert'];
 ---
 
 <Base
   title={BRAND}
   description="Handverlesene Tech-Empfehlungen mit ehrlicher Einschätzung — Gaming, PC-Hardware, Smart Home und Technik. Jeder Pick eine bewusste Auswahl, keine Fake-Tests."
+  fullBleedTop={true}
 >
-  <section class="py-16 sm:py-24">
-    <p class="meta reveal">Handverlesen statt hochgeladen</p>
-    <h1 class="reveal mt-4 max-w-3xl text-4xl sm:text-6xl" style="--reveal-delay: 80ms">
-      Tech, die ich dir auch persönlich empfehlen würde<span class="star" aria-hidden="true">✳</span>
-    </h1>
-    <p class="reveal mt-6 max-w-xl text-lg text-muted" style="--reveal-delay: 160ms">
-      Keine Fake-Tests, keine hundert Vergleichstabellen. Jeder Pick hier ist eine bewusste
-      Auswahl — mit ehrlicher Einschätzung, wofür er taugt und wofür nicht.
-    </p>
-    <p class="reveal mt-8 max-w-xl text-sm text-faint" style="--reveal-delay: 240ms">
-      <span class="star" aria-hidden="true">✳</span> Das Sternchen steht für Transparenz:&nbsp;{DISCLOSURE}
-    </p>
+  <section class="bleed hero" aria-label="Intro">
+    <div class="hero-art">
+      <Image
+        src={heroArt}
+        alt=""
+        widths={[828, 1280, 1920, 2560]}
+        sizes="100vw"
+        loading="eager"
+        fetchpriority="high"
+        quality={78}
+      />
+    </div>
+    <div class="hero-veil" aria-hidden="true"></div>
+    <div class="hero-orb a" aria-hidden="true"></div>
+    <div class="hero-orb b" aria-hidden="true"></div>
+
+    <div class="relative z-10 mx-auto w-full max-w-6xl px-4 pb-16 pt-44 sm:px-6 sm:pb-24">
+      <p class="meta eyebrow hw" style="--d: 100ms">Handverlesen statt hochgeladen</p>
+      <h1 class="mt-5 max-w-3xl text-4xl sm:text-6xl lg:text-7xl">
+        {words.map((w, i) => (
+          <span class="hw" style={`--d: ${200 + i * 70}ms`}>{w}&nbsp;</span>
+        ))}<span class="hw star star-spin" style={`--d: ${200 + words.length * 70}ms`} aria-hidden="true">✳</span>
+      </h1>
+      <p class="hw mt-6 max-w-xl text-lg text-muted sm:text-xl" style={`--d: ${400 + words.length * 70}ms`}>
+        Keine hundert Vergleichstabellen. Jeder Pick hier ist eine bewusste Auswahl —
+        mit ehrlicher Einschätzung, wofür er taugt und wofür nicht.
+      </p>
+      <div class="hw mt-9 flex flex-wrap items-center gap-4" style={`--d: ${550 + words.length * 70}ms`}>
+        <a
+          href={href('/empfehlungen')}
+          class="btn-cta whitespace-nowrap rounded-xl bg-paper px-6 py-3.5 font-display text-base font-bold text-ink no-underline"
+        >
+          Top-Picks ansehen
+        </a>
+        <a href={href('/ueber')} class="whitespace-nowrap rounded-xl border border-faint/60 px-6 py-3.5 text-base text-muted no-underline transition-colors hover:border-faint hover:text-paper">
+          Wie ich auswähle
+        </a>
+      </div>
+      <p class="hw mt-10 max-w-xl text-xs text-faint sm:text-sm" style={`--d: ${700 + words.length * 70}ms`}>
+        <span class="star" aria-hidden="true">✳</span> Das Sternchen steht für Transparenz:&nbsp;{DISCLOSURE}
+      </p>
+    </div>
   </section>
 
+  <div class="marquee bleed" aria-hidden="true">
+    <div class="marquee-track meta">
+      {[0, 1].map(() => marqueeItems.concat(marqueeItems).map((item) => (
+        <span class="flex items-center gap-3 whitespace-nowrap">
+          <span class="star">✳</span>{item}
+        </span>
+      )))}
+    </div>
+  </div>
+
   {featured.length > 0 && (
-    <section aria-labelledby="top-picks" class="py-8">
-      <div class="mb-6 flex items-baseline justify-between gap-4">
-        <h2 id="top-picks" class="text-2xl sm:text-3xl">Top-Picks</h2>
+    <section aria-labelledby="top-picks" class="py-16">
+      <div class="io mb-8 flex items-baseline justify-between gap-4">
+        <h2 id="top-picks" class="text-2xl sm:text-4xl">Top-Picks</h2>
         <a href={href('/empfehlungen')} class="text-sm text-accent-soft hover:underline">Alle ansehen →</a>
       </div>
       <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -42,16 +89,16 @@ const countFor = (catId: string) =>
     </section>
   )}
 
-  <section aria-labelledby="kategorien" class="py-8">
-    <h2 id="kategorien" class="mb-6 text-2xl sm:text-3xl">Kategorien</h2>
+  <section aria-labelledby="kategorien" class="py-10">
+    <h2 id="kategorien" class="io mb-8 text-2xl sm:text-4xl">Kategorien</h2>
     <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-      {categories.map((c) => <CategoryTile category={c} count={countFor(c.id)} />)}
+      {categories.map((c, i) => <CategoryTile category={c} count={countFor(c.id)} index={i} />)}
     </div>
   </section>
 
   {latest.length > 0 && (
-    <section aria-labelledby="neu" class="py-8">
-      <h2 id="neu" class="mb-6 text-2xl sm:text-3xl">Neu im Regal</h2>
+    <section aria-labelledby="neu" class="py-16">
+      <h2 id="neu" class="io mb-8 text-2xl sm:text-4xl">Neu im Regal</h2>
       <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {latest.map((p, i) => <ProductCard product={p} index={i} />)}
       </div>

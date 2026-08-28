@@ -1,9 +1,11 @@
 ---
+import { Image } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
 import AmazonCta from '../../components/AmazonCta.astro';
 import ProsCons from '../../components/ProsCons.astro';
 import ProductCard from '../../components/ProductCard.astro';
 import { getPartnerTag, getPublishedProducts } from '../../lib/data';
+import { categoryArt } from '../../lib/art';
 import { getAmazonOffer } from '../../lib/providers/amazon';
 import { BRAND, href } from '../../lib/site';
 import type { AffiliateProduct } from '../../lib/types';
@@ -20,6 +22,7 @@ const { product } = Astro.props;
 const partnerTag = await getPartnerTag();
 const offer = getAmazonOffer(product, partnerTag);
 const cat = product.categories[0];
+const art = categoryArt(cat?.slug);
 const pickNo = String(product.pickNo).padStart(2, '0');
 const ed = product.editorial;
 
@@ -82,10 +85,23 @@ const breadcrumbLd = {
             alt={product.title}
             loading="eager"
             decoding="async"
-            class="absolute inset-0 h-full w-full object-contain p-8"
+            class="prod-img"
           />
         ) : (
-          <span class="ghost-no" aria-hidden="true">{pickNo}</span>
+          <>
+            {art && (
+              <Image
+                src={art}
+                alt=""
+                widths={[828, 1280, 1920]}
+                sizes="(min-width: 1024px) 60vw, 92vw"
+                loading="eager"
+                quality={75}
+              />
+            )}
+            <span class="tint" aria-hidden="true"></span>
+            <span class="ghost-no" aria-hidden="true">{pickNo}</span>
+          </>
         )}
       </div>
 

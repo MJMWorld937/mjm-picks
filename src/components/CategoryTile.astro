@@ -1,20 +1,37 @@
 ---
+import { Image } from 'astro:assets';
 import type { Category } from '../lib/types';
+import { categoryArt } from '../lib/art';
 import { href } from '../lib/site';
 
 interface Props {
   category: Category;
   count: number;
+  index?: number;
 }
-const { category, count } = Astro.props;
+const { category, count, index = 0 } = Astro.props;
+const art = categoryArt(category.slug);
 ---
 
 <a
   href={href(`/${category.slug}`)}
-  class={`card-link artwork hue-${category.hue} group relative flex min-h-36 flex-col justify-end overflow-hidden rounded-2xl border border-line p-5 no-underline`}
+  class={`io tilt artwork hue-${category.hue} group relative flex min-h-44 flex-col justify-end overflow-hidden rounded-2xl border border-line p-5 no-underline`}
+  style={`--d: ${index * 90}ms`}
 >
+  {art && (
+    <Image
+      src={art}
+      alt=""
+      widths={[480, 768]}
+      sizes="(min-width: 1024px) 24vw, (min-width: 640px) 45vw, 92vw"
+      loading="lazy"
+      quality={65}
+    />
+  )}
+  <span class="tint" aria-hidden="true"></span>
+  <span class="glow" aria-hidden="true"></span>
   <p class="meta relative z-10">{count} {count === 1 ? 'Pick' : 'Picks'}</p>
-  <h3 class="relative z-10 font-display text-2xl font-bold group-hover:text-accent-soft transition-colors">
+  <h3 class="relative z-10 font-display text-2xl font-bold transition-colors group-hover:text-accent-soft">
     {category.name}
   </h3>
 </a>

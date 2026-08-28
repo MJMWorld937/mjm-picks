@@ -1,7 +1,9 @@
 ---
+import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import ProductCard from '../components/ProductCard.astro';
 import { getCategories, getPublishedProducts } from '../lib/data';
+import { categoryArt } from '../lib/art';
 import { BRAND, href } from '../lib/site';
 import type { Category } from '../lib/types';
 
@@ -17,6 +19,7 @@ interface Props {
   category: Category;
 }
 const { category } = Astro.props;
+const art = categoryArt(category.slug);
 const products = (await getPublishedProducts()).filter((p) =>
   p.categories.some((c) => c.id === category.id)
 );
@@ -42,9 +45,22 @@ const breadcrumbLd = {
     <span aria-current="page">{category.name}</span>
   </nav>
 
-  <section class="py-10 sm:py-14">
-    <h1 class="text-3xl sm:text-5xl">{category.name}</h1>
-    <p class="mt-4 max-w-xl text-lg text-muted">{category.description}</p>
+  <section
+    class={`artwork hue-${category.hue} relative mt-6 mb-12 flex min-h-64 flex-col justify-end overflow-hidden rounded-3xl border border-line p-6 sm:min-h-80 sm:p-10`}
+  >
+    {art && (
+      <Image
+        src={art}
+        alt=""
+        widths={[828, 1280, 1920]}
+        sizes="(min-width: 1280px) 1152px, 92vw"
+        loading="eager"
+        quality={75}
+      />
+    )}
+    <span class="tint" aria-hidden="true"></span>
+    <h1 class="relative z-10 text-3xl sm:text-6xl">{category.name}</h1>
+    <p class="relative z-10 mt-3 max-w-xl text-lg text-paper/85">{category.description}</p>
   </section>
 
   {products.length > 0 ? (
