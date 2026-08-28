@@ -4,8 +4,8 @@ import { scenes } from '../content/scenes';
 import { href } from '../lib/site';
 
 const startScene = scenes[0]?.id ?? 'desk';
-// Einblende-Verzögerung der Hotspots je Szene: im PC erst NACH der Abschraub-Sequenz
-const hotspotDelay: Record<string, string> = { desk: '250ms', 'pc-innen': '2850ms' };
+// Einblende-Verzögerung der Hotspots je Szene
+const hotspotDelay: Record<string, string> = { desk: '250ms', 'pc-innen': '450ms' };
 ---
 
 <section id="setup-explorer" class="bleed" aria-label="Interaktives Setup — klick auf ein Gerät">
@@ -46,19 +46,6 @@ const hotspotDelay: Record<string, string> = { desk: '250ms', 'pc-innen': '2850m
           />
           <div class="exp-vignette" aria-hidden="true"></div>
 
-          {scene.id === 'pc-innen' && (
-            <div
-              class="case-panel"
-              style="--panel-l: 29.5%; --panel-t: 7%; --panel-w: 43%; --panel-h: 84%"
-              aria-hidden="true"
-            >
-              <span class="screw" style="--sd: 0ms; left: 3.5%; top: 2.5%"></span>
-              <span class="screw" style="--sd: 180ms; right: 3.5%; top: 2.5%"></span>
-              <span class="screw" style="--sd: 360ms; left: 3.5%; bottom: 2.5%"></span>
-              <span class="screw" style="--sd: 540ms; right: 3.5%; bottom: 2.5%"></span>
-            </div>
-          )}
-
           {scene.hotspots.map((h, i) =>
             h.target.type === 'bereich' ? (
               <a
@@ -87,6 +74,16 @@ const hotspotDelay: Record<string, string> = { desk: '250ms', 'pc-innen': '2850m
           )}
         </div>
       ))}
+
+      <!-- Cinema-Sequenz: Seitenwand wird abgeschraubt (Video, endet auf der Innenansicht) -->
+      <div class="exp-video" id="exp-video" hidden aria-hidden="true">
+        <video
+          src={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/media/pc-aufschrauben.mp4`}
+          playsinline
+          muted
+          preload="metadata"
+        ></video>
+      </div>
     </div>
   </div>
   </div>
@@ -124,11 +121,12 @@ const hotspotDelay: Record<string, string> = { desk: '250ms', 'pc-innen': '2850m
 
 <script>
   const root = document.getElementById('setup-explorer');
-  const stage = document.getElementById('exp-stage');
   const viewport = document.getElementById('exp-viewport');
+  const videoWrap = document.getElementById('exp-video');
+  const video = videoWrap?.querySelector('video') ?? null;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  if (root && stage && viewport) {
+  if (root && viewport) {
     // Beim Laden mittig ausrichten (mobil ist die Bühne breiter als der Bildschirm)
     viewport.scrollLeft = (viewport.scrollWidth - viewport.clientWidth) / 2;
 
@@ -151,51 +149,52 @@ const hotspotDelay: Record<string, string> = { desk: '250ms', 'pc-innen': '2850m
       });
     };
 
-    // Kamera fährt auf das angeklickte Element zu
-    const zoomTo = (el: HTMLElement, done: () => void) => {
-      if (reduced) return done();
-      const r = el.getBoundingClientRect();
-      const s = stage.getBoundingClientRect();
-      stage.style.setProperty('--zx', `${(((r.left + r.width / 2) - s.left) / s.width) * 100}%`);
-      stage.style.setProperty('--zy', `${(((r.top + r.height / 2) - s.top) / s.height) * 100}%`);
-      stage.classList.add('zooming');
-      window.setTimeout(done, 760);
+    // Cinema-Sequenz: Video spielt, am Ende übernimmt nahtlos die interaktive Szene
+    let playing = false;
+    const hideVideo = () => {
+      videoWrap?.classList.remove('on');
+      window.setTimeout(() => {
+        if (videoWrap) videoWrap.hidden = true;
+      }, 500);
     };
-
-    const resetStage = () => {
-      stage.style.transition = 'none';
-      stage.classList.remove('zooming');
-      void stage.offsetWidth; // Reflow erzwingen, damit der Reset nicht animiert
-      stage.style.transition = '';
-    };
-
-    // Browser-Zurück: Seite kommt aus dem BFCache mit eingefrorenem Zoom-Zustand zurück
-    window.addEventListener('pageshow', (e) => {
-      if ((e as PageTransitionEvent).persisted) resetStage();
-    });
-
-    root.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
-      const gotoEl = target.closest<HTMLElement>('[data-goto]');
-      if (gotoEl?.dataset.goto) {
-        const id = gotoEl.dataset.goto;
-        if (gotoEl.classList.contains('hotspot')) {
-          // In den PC hineinfahren, dann Szene wechseln (Abschrauben läuft per CSS)
-          zoomTo(gotoEl, () => {
-            resetStage();
-            setScene(id);
-          });
-        } else {
-          setScene(id); // Zurück-Button & Legenden-Chips: direkter Wechsel
-        }
+    const playIntro = (done: () => void) => {
+      if (!video || !videoWrap || reduced || playing) {
+        done();
         return;
       }
-      const link = target.closest<HTMLAnchorElement>('a.hotspot');
-      if (link && !reduced) {
-        e.preventDefault();
-        zoomTo(link, () => {
-          window.location.href = link.href;
-        });
+      playing = true;
+      root.classList.add('video-running');
+      let finished = false;
+      const finish = () => {
+        if (finished) return;
+        finished = true;
+        playing = false;
+        root.classList.remove('video-running');
+        done();
+        hideVideo();
+      };
+      videoWrap.hidden = false;
+      requestAnimationFrame(() => videoWrap.classList.add('on'));
+      video.currentTime = 0;
+      video.onended = finish;
+      video.onerror = finish;
+      const p = video.play();
+      if (p) p.catch(finish);
+      // Sicherheitsnetz, falls 'ended' nie feuert
+      window.setTimeout(finish, 12000);
+    };
+
+    root.addEventListener('click', (e) => {
+      const gotoEl = (e.target as HTMLElement).closest<HTMLElement>('[data-goto]');
+      if (!gotoEl?.dataset.goto) return;
+      const id = gotoEl.dataset.goto;
+      if (id === 'pc-innen') {
+        playIntro(() => setScene(id));
+      } else {
+        if (video && !video.paused) video.pause();
+        hideVideo();
+        playing = false;
+        setScene(id);
       }
     });
   }
