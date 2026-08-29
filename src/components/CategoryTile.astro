@@ -34,4 +34,9 @@ const art = categoryArt(category.slug);
   <h3 class="relative z-10 font-display text-2xl font-bold transition-colors group-hover:text-accent-soft">
     {category.name}
   </h3>
+  {category.description && (
+    <p class="relative z-10 mt-1.5 line-clamp-2 text-sm leading-relaxed text-paper/75">
+      {category.description}
+    </p>
+  )}
 </a>
