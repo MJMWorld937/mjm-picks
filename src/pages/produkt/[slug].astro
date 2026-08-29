@@ -113,6 +113,9 @@ const breadcrumbLd = {
           </>
         )}
       </div>
+      {product.imageUrl && product.imageSource === 'press' && (
+        <p class="mt-2 text-xs text-faint">Produktbild: Hersteller</p>
+      )}
 
       <div class="prose-mjm mt-10">
         {ed.recommendation && (
