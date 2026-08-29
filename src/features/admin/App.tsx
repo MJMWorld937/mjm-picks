@@ -333,11 +333,27 @@ function ProductForm({
       </section>
 
       {msg && <p className="text-sm text-amber-400">{msg}</p>}
-      <div className="flex gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <button className={btnPrimary} onClick={save} disabled={busy}>
           {busy ? 'Speichern …' : 'Speichern'}
         </button>
         <button className={btnGhost} onClick={onDone}>Abbrechen</button>
+        {productId && (
+          <button
+            className="ml-auto rounded-lg border border-red-900 px-4 py-2 text-sm text-red-400 hover:border-red-500 hover:text-red-300"
+            disabled={busy}
+            onClick={async () => {
+              if (!window.confirm(`„${product.title}" endgültig löschen? Alle Texte gehen verloren — Archivieren ist die sanfte Alternative.`)) return;
+              setBusy(true);
+              const { error } = await supabase.from('products').delete().eq('id', productId);
+              setBusy(false);
+              if (error) setMsg(`Löschen fehlgeschlagen: ${error.message}`);
+              else onDone();
+            }}
+          >
+            Pick löschen
+          </button>
+        )}
       </div>
     </div>
   );
