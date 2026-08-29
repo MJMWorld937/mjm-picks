@@ -2,9 +2,10 @@
 import { Image } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
 import AmazonCta from '../../components/AmazonCta.astro';
+import PicksAnalyse from '../../components/PicksAnalyse.astro';
 import ProsCons from '../../components/ProsCons.astro';
 import ProductCard from '../../components/ProductCard.astro';
-import { getPartnerTag, getPublishedProducts } from '../../lib/data';
+import { getCommunityPatterns, getConflicts, getPartnerTag, getPicksScores, getPublishedProducts, getSourceItems } from '../../lib/data';
 import { categoryArt } from '../../lib/art';
 import { getAmazonOffer } from '../../lib/providers/amazon';
 import { BRAND, href } from '../../lib/site';
@@ -28,6 +29,14 @@ const ed = product.editorial;
 
 const all = await getPublishedProducts();
 const alternative = all.find((p) => p.id === (ed as any).alternative_product_id) ?? null;
+
+const [allItems, allPatterns, allConflicts, allScores] = await Promise.all([
+  getSourceItems(), getCommunityPatterns(), getConflicts(), getPicksScores(),
+]);
+const sourceItems = allItems.filter((x) => x.productId === product.id);
+const patterns = allPatterns.filter((x) => x.productId === product.id);
+const productConflicts = allConflicts.filter((x) => x.productId === product.id);
+const picksScore = allScores.find((x) => x.productId === product.id) ?? null;
 const related = all
   .filter((p) => p.id !== product.id && p.categories.some((c) => cat && c.id === cat.id))
   .slice(0, 3);
@@ -150,6 +159,8 @@ const breadcrumbLd = {
           </a>
         </p>
       )}
+
+      <PicksAnalyse score={picksScore} items={sourceItems} patterns={patterns} conflicts={productConflicts} />
     </article>
 
     <aside class="lg:sticky lg:top-24 lg:self-start">

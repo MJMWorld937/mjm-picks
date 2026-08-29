@@ -1,0 +1,3 @@
+﻿-- PICKS-Quellensystem v1 — angewendet 29.08.2026 via MCP apply_migration 'picks_quellensystem'.
+-- Vollstaendiges SQL: siehe Supabase Dashboard > Database > Migrations (picks_quellensystem).
+-- Tabellen: sources, source_expertise, source_items, source_claims, community_patterns, conflicts, picks_scores (alle mit RLS: public read auf published, write nur Admin) + Seeds (19 Quellen Tier S/A/B, Expertise-Matrix).

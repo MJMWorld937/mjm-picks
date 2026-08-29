@@ -1,0 +1,141 @@
+---
+import type { CommunityPattern, PicksScore, ProductConflict, SourceItemPublic } from '../lib/types';
+import { href } from '../lib/site';
+
+interface Props {
+  score: PicksScore | null;
+  items: SourceItemPublic[];
+  patterns: CommunityPattern[];
+  conflicts: ProductConflict[];
+}
+const { score, items, patterns, conflicts } = Astro.props;
+
+const hasContent = score !== null || items.length > 0 || patterns.length > 0;
+const typeLabel: Record<string, string> = {
+  LAB_TEST: 'Messbasierter Test',
+  EDITORIAL_REVIEW: 'Editorial-Review',
+  YOUTUBE_REVIEW: 'Video-Review',
+  COMMUNITY_THREAD: 'Community',
+  MANUFACTURER: 'Hersteller',
+  DATABASE: 'Datenbank',
+};
+const measuredCount = items.filter((i) => i.contentType === 'LAB_TEST').length;
+const videoEditorialCount = items.filter((i) => i.contentType === 'YOUTUBE_REVIEW' || i.contentType === 'EDITORIAL_REVIEW').length;
+const pros = patterns.filter((p) => p.positive);
+const cons = patterns.filter((p) => !p.positive);
+const bars: { label: string; key: 'p' | 'i' | 'c' | 'k' | 's'; desc: string }[] = [
+  { label: 'P', key: 'p', desc: 'Performance' },
+  { label: 'I', key: 'i', desc: 'Interaction' },
+  { label: 'C', key: 'c', desc: 'Cost / Value' },
+  { label: 'K', key: 'k', desc: 'Knowledge (Expertenkonsens)' },
+  { label: 'S', key: 's', desc: 'Stärken / Schwächen' },
+];
+---
+
+{hasContent && (
+  <section aria-labelledby="picks-analyse" class="mt-10 rounded-2xl border border-line bg-coal p-6">
+    <div class="mb-1 flex flex-wrap items-baseline justify-between gap-2">
+      <h2 id="picks-analyse" class="text-xl">
+        PICKS-Analyse<span class="star" aria-hidden="true">✳</span>
+      </h2>
+      <a href={href('/methodik')} class="meta hover:text-paper">Wie wir bewerten →</a>
+    </div>
+    <p class="mb-6 text-xs text-faint">
+      Unsere eigene Bewertung auf Basis unabhängiger Quellen — kein Score einer externen Seite.
+    </p>
+
+    {score && (
+      <div class="mb-8 grid gap-6 sm:grid-cols-[auto_1fr]">
+        <div class="flex flex-col items-center justify-center rounded-2xl border border-line bg-card px-8 py-6">
+          <span class="font-display text-5xl font-bold text-accent-soft">{(score.total / 10).toFixed(1)}</span>
+          <span class="meta mt-1">PICKS-Score / 10</span>
+          <span class="mt-3 text-xs text-muted">Confidence: {Math.round(score.confidencePct)} %</span>
+          {score.rankingGroup && score.rankingPosition && score.rankingTotal && score.rankingTotal >= 5 && (
+            <span class="mt-2 text-xs text-muted">#{score.rankingPosition} von {score.rankingTotal} · {score.rankingGroup}</span>
+          )}
+        </div>
+        <div class="flex flex-col justify-center gap-2.5">
+          {bars.map((b) => (
+            <div class="flex items-center gap-3">
+              <span class="meta w-4 shrink-0 text-paper!">{b.label}</span>
+              <div class="h-2 grow overflow-hidden rounded-full bg-ink">
+                <div class="h-full rounded-full bg-accent/80" style={`width: ${score[b.key]}%`}></div>
+              </div>
+              <span class="w-24 shrink-0 text-right text-xs text-muted">{(score[b.key] / 10).toFixed(1)} · {b.desc.split(' ')[0]}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+
+    {items.length > 0 && (
+      <p class="mb-6 text-sm text-muted">
+        <strong class="text-paper">{items.length} unabhängige {items.length === 1 ? 'Quelle' : 'Quellen'} ausgewertet</strong>
+        {measuredCount > 0 && ` · ${measuredCount} messbasiert`}
+        {videoEditorialCount > 0 && ` · ${videoEditorialCount} Video-/Editorial-Reviews`}
+      </p>
+    )}
+
+    {(pros.length > 0 || cons.length > 0) && (
+      <div class="mb-6 grid gap-4 sm:grid-cols-2">
+        {pros.length > 0 && (
+          <div>
+            <h3 class="meta mb-2 text-paper!">Community: wiederholt gelobt</h3>
+            <ul class="space-y-1.5 text-sm">
+              {pros.map((p) => (
+                <li class="flex gap-2"><span class="star shrink-0" aria-hidden="true">✳</span><span>{p.summary}</span></li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {cons.length > 0 && (
+          <div>
+            <h3 class="meta mb-2 text-paper!">Community: wiederholt berichtet</h3>
+            <ul class="space-y-1.5 text-sm text-muted">
+              {cons.map((c) => (
+                <li class="flex gap-2"><span class="shrink-0" aria-hidden="true">—</span><span>{c.summary}</span></li>
+              ))}
+            </ul>
+            <p class="mt-2 text-xs text-faint">
+              Muster aus ausgewerteten Community-Quellen — kein repräsentativer Anteil aller Besitzer.
+            </p>
+          </div>
+        )}
+      </div>
+    )}
+
+    {conflicts.length > 0 && (
+      <div class="mb-6 rounded-xl border border-amber-900/60 bg-ink p-4">
+        <h3 class="meta mb-2 text-amber-400!">Widersprüche in den Quellen</h3>
+        {conflicts.map((cf) => (
+          <div class="mb-2 text-sm last:mb-0">
+            <p><span class="text-muted">Labor/Tests:</span> {cf.sideA}</p>
+            <p><span class="text-muted">Community:</span> {cf.sideB}</p>
+            {cf.explanationCandidates.length > 0 && (
+              <p class="mt-1 text-xs text-faint">Mögliche Erklärungen: {cf.explanationCandidates.join(' · ')}</p>
+            )}
+          </div>
+        ))}
+      </div>
+    )}
+
+    {items.length > 0 && (
+      <details class="group">
+        <summary class="meta cursor-pointer list-none hover:text-paper">
+          Ausgewertete Quellen anzeigen <span class="inline-block transition-transform group-open:rotate-90">→</span>
+        </summary>
+        <ul class="mt-3 space-y-2">
+          {items.map((it) => (
+            <li class="flex flex-wrap items-baseline gap-x-2 text-sm">
+              <a href={it.url} rel="noopener noreferrer nofollow" target="_blank" class="text-accent-soft underline underline-offset-2">
+                {it.sourceName}
+              </a>
+              <span class="text-muted">— {it.title}</span>
+              <span class="meta">{typeLabel[it.contentType]}{it.publishedAt && ` · ${it.publishedAt.slice(0, 7)}`}</span>
+            </li>
+          ))}
+        </ul>
+      </details>
+    )}
+  </section>
+)}

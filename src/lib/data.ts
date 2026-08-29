@@ -79,3 +79,86 @@ export async function getPartnerTag(): Promise<string> {
   const settings = await getSettings();
   return typeof settings.partner_tag === 'string' ? settings.partner_tag : '';
 }
+
+// ---------- PICKS-Quellensystem: RLS liefert dem Anon-Key nur veröffentlichte Zeilen ----------
+import type { CommunityPattern, PicksScore, ProductConflict, SourceItemPublic } from './types';
+
+let sourceItemsCache: Promise<SourceItemPublic[]> | null = null;
+export function getSourceItems(): Promise<SourceItemPublic[]> {
+  sourceItemsCache ??= (async () => {
+    const { data, error } = await supabase
+      .from('source_items')
+      .select('id, product_id, url, title, author_channel, published_at, content_type, sources(name, tier)')
+      .order('published_at', { ascending: false });
+    if (error) throw new Error(`source_items: ${error.message}`);
+    return (data ?? []).map((r: any): SourceItemPublic => ({
+      id: r.id,
+      productId: r.product_id,
+      url: r.url,
+      title: r.title,
+      authorChannel: r.author_channel,
+      publishedAt: r.published_at,
+      contentType: r.content_type,
+      sourceName: r.sources?.name ?? '',
+      sourceTier: r.sources?.tier ?? 'B',
+    }));
+  })();
+  return sourceItemsCache;
+}
+
+let patternsCache: Promise<CommunityPattern[]> | null = null;
+export function getCommunityPatterns(): Promise<CommunityPattern[]> {
+  patternsCache ??= (async () => {
+    const { data, error } = await supabase
+      .from('community_patterns')
+      .select('product_id, issue_type, positive, summary, severity, confidence');
+    if (error) throw new Error(`community_patterns: ${error.message}`);
+    return (data ?? []).map((r: any) => ({
+      productId: r.product_id,
+      issueType: r.issue_type,
+      positive: r.positive,
+      summary: r.summary,
+      severity: r.severity,
+      confidence: r.confidence,
+    }));
+  })();
+  return patternsCache;
+}
+
+let conflictsCache: Promise<ProductConflict[]> | null = null;
+export function getConflicts(): Promise<ProductConflict[]> {
+  conflictsCache ??= (async () => {
+    const { data, error } = await supabase
+      .from('conflicts')
+      .select('product_id, claim_category, side_a, side_b, explanation_candidates, note');
+    if (error) throw new Error(`conflicts: ${error.message}`);
+    return (data ?? []).map((r: any) => ({
+      productId: r.product_id,
+      claimCategory: r.claim_category,
+      sideA: r.side_a,
+      sideB: r.side_b,
+      explanationCandidates: r.explanation_candidates ?? [],
+      note: r.note,
+    }));
+  })();
+  return conflictsCache;
+}
+
+let scoresCache: Promise<PicksScore[]> | null = null;
+export function getPicksScores(): Promise<PicksScore[]> {
+  scoresCache ??= (async () => {
+    const { data, error } = await supabase.from('picks_scores').select('*');
+    if (error) throw new Error(`picks_scores: ${error.message}`);
+    return (data ?? []).map((r: any) => ({
+      productId: r.product_id,
+      p: Number(r.p), i: Number(r.i), c: Number(r.c), k: Number(r.k), s: Number(r.s),
+      total: Number(r.total),
+      confidencePct: Number(r.confidence_pct),
+      methodologyVersion: r.methodology_version,
+      rankingGroup: r.ranking_group,
+      rankingPosition: r.ranking_position,
+      rankingTotal: r.ranking_total,
+    }));
+  })();
+  return scoresCache;
+}

@@ -1,0 +1,101 @@
+---
+import Base from '../layouts/Base.astro';
+import { BRAND } from '../lib/site';
+---
+
+<Base
+  title="PICKS-Methodik"
+  description="Wie MJM Picks bewertet: Quellen-Klassen, der PICKS-Score, Community-Signale, Konflikte und Confidence — transparent erklärt."
+>
+  <section class="py-12 sm:py-16">
+    <p class="meta eyebrow">Methodik · Version 1.0</p>
+    <h1 class="mt-4 text-3xl sm:text-5xl">Wie wir bewerten<span class="star" aria-hidden="true">✳</span></h1>
+    <div class="prose-mjm mt-8">
+      <p class="text-lg">
+        Damit du nicht zehn Tests lesen musst: Wir werten unabhängige Quellen strukturiert aus
+        und fassen sie nachvollziehbar zusammen. Auf dieser Seite steht, wie genau — denn ein
+        Score ohne Methodik ist nur eine Meinung mit Kommastelle.
+      </p>
+
+      <h2>1. Welche Quellen wir nutzen</h2>
+      <p>
+        Labortests und messbasierte Reviews (z. B. GamersNexus, RTINGS, ComputerBase, Igor'sLAB,
+        TechPowerUp), hochwertige Video- und Editorial-Reviews (z. B. HardwareDealz, Hardware
+        Canucks) sowie Community-Diskussionen (Fachforen, Reddit). Jede ausgewertete Quelle wird
+        auf der Produktseite mit Link und Datum genannt.
+      </p>
+
+      <h2>2. Nicht jede Quelle zählt gleich</h2>
+      <p>
+        Wir klassifizieren Quellen in drei Stufen: <strong>Tier S</strong> (messbasiert, dokumentierte
+        Methodik) zählt am stärksten, <strong>Tier A</strong> (hochwertige Reviews ohne Labormessung)
+        mittel, <strong>Tier B</strong> (Community) deutlich schwächer. Zusätzlich gewichten wir nach
+        Fachgebiet: Ein Monitor-Speziallabor zählt bei Monitoren voll, bei Grafikkarten kaum.
+      </p>
+
+      <h2>3. Fremde Bewertungen bleiben fremde Bewertungen</h2>
+      <p>
+        Vergibt eine Quelle selbst eine Zahl (z. B. 9/10), rechnen wir sie intern auf 0–100 um und
+        speichern immer den Originalwert mit. Sagt ein Tester nur „sehr gut", erfinden wir daraus
+        <strong>keine</strong> Zahl in seinem Namen — die Aussage fließt als qualitative Einschätzung in
+        unsere eigene Bewertung ein. Der PICKS-Score ist immer <strong>unsere</strong> Bewertung, nie die
+        einer externen Quelle. Wenn wir eine Quelle nennen, heißt das „wurde ausgewertet" — nicht,
+        dass diese Quelle uns empfiehlt oder mit uns kooperiert.
+      </p>
+
+      <h2>4. Der PICKS-Score</h2>
+      <p>Fünf Teilbewertungen, jede 0–100, gewichtet zusammengefasst:</p>
+      <ul>
+        <li><strong>P — Performance</strong> (30 %): Wie gut erfüllt das Produkt seinen Zweck?</li>
+        <li><strong>I — Interaction</strong> (20 %): Bedienung, Ergonomie, Verarbeitung, Alltag.</li>
+        <li><strong>C — Cost / Value</strong> (20 %): Preis-Leistung im Marktumfeld.</li>
+        <li><strong>K — Knowledge</strong> (20 %): der gewichtete Konsens der Fachquellen.</li>
+        <li><strong>S — Stärken/Schwächen</strong> (10 %): Schwere und Häufigkeit der Schwächen; echte Dealbreaker deckeln den Wert.</li>
+      </ul>
+
+      <h2>5. Community-Signale — mit Vorsicht</h2>
+      <p>
+        Foren und Reddit sind Gold für Langzeitprobleme (Spulenfiepen, Firmware-Bugs), aber
+        verzerrt: Wer Probleme hat, schreibt eher als wer zufrieden ist. Deshalb werten wir nur
+        <strong>wiederkehrende Muster</strong> aus mehreren unabhängigen Diskussionen — nie Einzelposts —
+        und sagen bewusst „wird in ausgewerteten Quellen wiederholt berichtet" statt „X % aller
+        Besitzer sind betroffen". Solche Muster können wir nicht in Prozente übersetzen, und das
+        behaupten wir auch nicht.
+      </p>
+
+      <h2>6. Widersprüche zeigen wir an</h2>
+      <p>
+        Wenn Labortests „leise" messen und die Community wiederholt Spulenfiepen meldet, mitteln
+        wir das nicht weg. Die Produktseite zeigt den Widerspruch offen — mit möglichen
+        Erklärungen (andere Revision, anderes Modell, Serienstreuung).
+      </p>
+
+      <h2>7. Confidence: Wie belastbar ist der Score?</h2>
+      <p>
+        Ein Score aus zwölf Quellen ist mehr wert als einer aus drei. Die Confidence-Angabe (in %)
+        wächst mit Anzahl und Qualität der Quellen, sinkt bei Widersprüchen und veralteten Tests.
+        <strong>Unter 40 % Confidence oder bei weniger als drei Quellen veröffentlichen wir keinen
+        PICKS-Score</strong> — dann findest du nur die Quellenliste und unsere redaktionelle Einschätzung.
+      </p>
+
+      <h2>8. Was wir nicht tun</h2>
+      <ul>
+        <li>Keine erfundenen Tests, Messwerte oder Scores — fehlende Information heißt bei uns „unbekannt".</li>
+        <li>Keine kopierten Artikel, Transkripte oder Benchmark-Grafiken — immer eigene Zusammenfassung plus Link zum Original.</li>
+        <li>Kein „von uns getestet", wenn wir es nicht selbst in der Hand hatten.</li>
+      </ul>
+
+      <h2>9. Versionierung</h2>
+      <p>
+        Jeder Score trägt die Methodik-Version, mit der er berechnet wurde (aktuell 1.0). Ändern
+        wir Gewichtungen oder Regeln, steigt die Version — Scores bleiben so nachvollziehbar.
+      </p>
+
+      <p class="text-sm text-faint">
+        Unabhängig davon gilt: {BRAND} finanziert sich über gekennzeichnete Affiliate-Links.
+        Die Provision ist produktunabhängig ähnlich hoch und hat keinen Einfluss auf Scores oder
+        Auswahl — Details im Affiliate-Hinweis.
+      </p>
+    </div>
+  </section>
+</Base>
