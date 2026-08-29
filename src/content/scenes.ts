@@ -55,9 +55,9 @@ export const scenes: ExplorerScene[] = [
       { id: 'pc', label: 'In den PC', x: 88.5, y: 55, labelSide: 'left', target: { type: 'scene', id: 'pc-innen' } },
       { id: 'tastatur', label: 'Tastatur', x: 29.5, y: 65, target: { type: 'bereich', slug: 'tastaturen' } },
       { id: 'maus', label: 'Maus', x: 55.5, y: 69.5, target: { type: 'bereich', slug: 'maeuse' } },
-      { id: 'headset', label: 'Headset', x: 8.5, y: 55.5, target: { type: 'bereich', slug: 'headsets' } },
+      { id: 'headset', label: 'Headset', x: 8.5, y: 51, target: { type: 'bereich', slug: 'headsets' } },
       { id: 'mikrofon', label: 'Mikro', x: 8.5, y: 43.5, target: { type: 'bereich', slug: 'mikrofone' } },
-      { id: 'speaker', label: 'Boxen', x: 27.5, y: 57.5, labelSide: 'bottom', target: { type: 'bereich', slug: 'lautsprecher' } },
+      { id: 'speaker', label: 'Boxen', x: 27.5, y: 57.5, target: { type: 'bereich', slug: 'lautsprecher' } },
     ],
   },
   {
