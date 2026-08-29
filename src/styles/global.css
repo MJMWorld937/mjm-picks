@@ -321,18 +321,22 @@
 .btn-cta:hover::after { transform: skewX(-22deg) translateX(420%); }
 
 /* ---------- Setup-Explorer (große Bühne, Zoom-Navigation, Abschrauben) ---------- */
+/* Leichter Rand zum Bildschirmrand statt full-bleed (Wunsch Alex 29.08.) */
+#setup-explorer { padding-inline: clamp(0.75rem, 2vw, 2.25rem); }
 .exp-viewport {
-  --exp-h: clamp(540px, 86svh, 1600px);
+  --exp-h: clamp(520px, 82svh, 1500px);
   height: var(--exp-h);
   overflow-x: auto;
   overflow-y: hidden;
   background: var(--color-ink);
   scrollbar-width: none;
+  border-radius: 1.5rem;
+  border: 1px solid var(--color-line);
 }
 .exp-viewport::-webkit-scrollbar { display: none; }
 /* Ultrawide: Höhe an die Breite koppeln, damit das PC-Gehäuse nie beschnitten wird */
 @media (min-aspect-ratio: 39/19) {
-  .exp-viewport { --exp-h: clamp(540px, 48vw, 1600px); }
+  .exp-viewport { --exp-h: clamp(520px, 46vw, 1500px); }
 }
 .exp-stage {
   position: relative;
@@ -406,7 +410,7 @@
   .exp-scene.has-portrait .exp-art-p { display: block; }
   .exp-scene.has-portrait .hs-set-l { display: none; }
   .exp-scene.has-portrait .hs-set-p { display: contents; }
-  .exp-viewport { --exp-h: 88svh; }
+  .exp-viewport { --exp-h: 84svh; }
   .exp-stage { width: 100%; }
   .hs-label { font-size: 0.6rem; padding: 0.2rem 0.55rem; letter-spacing: 0.08em; }
 }
