@@ -4,6 +4,8 @@
 import type { ImageMetadata } from 'astro';
 import deskArt from '../assets/art/setup-desk.png';
 import pcArt from '../assets/art/setup-pc.png';
+import deskArtPortrait from '../assets/art/setup-desk-portrait.png';
+import pcArtPortrait from '../assets/art/setup-pc-portrait.png';
 
 export interface SceneHotspot {
   id: string;
@@ -27,6 +29,9 @@ export interface ExplorerScene {
   /** Szene, zu der der Zurück-Button führt */
   backTo?: string;
   hotspots: SceneHotspot[];
+  /** 9:16-Version fürs Hochformat (Smartphone) — mit eigenen Hotspot-Koordinaten */
+  artPortrait?: ImageMetadata;
+  hotspotsPortrait?: SceneHotspot[];
 }
 
 export const scenes: ExplorerScene[] = [
@@ -44,6 +49,16 @@ export const scenes: ExplorerScene[] = [
       { id: 'mikrofon', label: 'Mikrofone', x: 15, y: 42, target: { type: 'bereich', slug: 'mikrofone' } },
       { id: 'speaker', label: 'Lautsprecher', x: 20.5, y: 71.5, target: { type: 'bereich', slug: 'lautsprecher' } },
     ],
+    artPortrait: deskArtPortrait,
+    hotspotsPortrait: [
+      { id: 'monitor', label: 'Monitor', x: 50, y: 40, target: { type: 'bereich', slug: 'monitore' } },
+      { id: 'pc', label: 'In den PC', x: 88.5, y: 55, labelSide: 'left', target: { type: 'scene', id: 'pc-innen' } },
+      { id: 'tastatur', label: 'Tastatur', x: 29.5, y: 65, target: { type: 'bereich', slug: 'tastaturen' } },
+      { id: 'maus', label: 'Maus', x: 55.5, y: 69.5, target: { type: 'bereich', slug: 'maeuse' } },
+      { id: 'headset', label: 'Headset', x: 8.5, y: 55.5, target: { type: 'bereich', slug: 'headsets' } },
+      { id: 'mikrofon', label: 'Mikro', x: 8.5, y: 43.5, target: { type: 'bereich', slug: 'mikrofone' } },
+      { id: 'speaker', label: 'Boxen', x: 27.5, y: 57.5, labelSide: 'bottom', target: { type: 'bereich', slug: 'lautsprecher' } },
+    ],
   },
   {
     id: 'pc-innen',
@@ -60,6 +75,17 @@ export const scenes: ExplorerScene[] = [
       { id: 'ssd', label: 'SSDs & Speicher', x: 44, y: 63, labelSide: 'right', target: { type: 'bereich', slug: 'ssds' } },
       { id: 'netzteil', label: 'Netzteile', x: 47.5, y: 78, target: { type: 'bereich', slug: 'netzteile' } },
       { id: 'gehaeuse', label: 'Gehäuse', x: 29, y: 12, target: { type: 'bereich', slug: 'gehaeuse' } },
+    ],
+    artPortrait: pcArtPortrait,
+    hotspotsPortrait: [
+      { id: 'gpu', label: 'GPU', x: 42, y: 52.5, target: { type: 'bereich', slug: 'grafikkarten' } },
+      { id: 'kuehler', label: 'Kühler', x: 36.5, y: 42, labelSide: 'left', target: { type: 'bereich', slug: 'cpu-kuehler' } },
+      { id: 'cpu', label: 'CPU', x: 46.5, y: 47.5, labelSide: 'left', target: { type: 'bereich', slug: 'prozessoren' } },
+      { id: 'ram', label: 'RAM', x: 53.5, y: 42, target: { type: 'bereich', slug: 'arbeitsspeicher' } },
+      { id: 'mainboard', label: 'Board', x: 31.5, y: 60, labelSide: 'left', target: { type: 'bereich', slug: 'mainboards' } },
+      { id: 'ssd', label: 'SSD', x: 43, y: 58, labelSide: 'bottom', target: { type: 'bereich', slug: 'ssds' } },
+      { id: 'netzteil', label: 'Netzteil', x: 49.5, y: 67.5, target: { type: 'bereich', slug: 'netzteile' } },
+      { id: 'gehaeuse', label: 'Gehäuse', x: 48.5, y: 29.5, target: { type: 'bereich', slug: 'gehaeuse' } },
     ],
   },
 ];

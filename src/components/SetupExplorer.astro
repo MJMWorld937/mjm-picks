@@ -1,11 +1,21 @@
 ---
 import { Image } from 'astro:assets';
-import { scenes } from '../content/scenes';
+import { scenes, type SceneHotspot } from '../content/scenes';
 import { href } from '../lib/site';
 
 const startScene = scenes[0]?.id ?? 'desk';
 // Einblende-Verzögerung der Hotspots je Szene
 const hotspotDelay: Record<string, string> = { desk: '250ms', 'pc-innen': '450ms' };
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+// Pro Szene: Landscape-Hotspots + (falls vorhanden) eigene Portrait-Hotspots
+function hotspotSets(scene: (typeof scenes)[number]) {
+  const sets: { cls: string; spots: SceneHotspot[] }[] = [
+    { cls: 'hs-set-l', spots: scene.hotspots },
+  ];
+  if (scene.hotspotsPortrait) sets.push({ cls: 'hs-set-p', spots: scene.hotspotsPortrait });
+  return sets;
+}
 ---
 
 <section id="setup-explorer" class="bleed" aria-label="Interaktives Setup — klick auf ein Gerät">
@@ -28,7 +38,7 @@ const hotspotDelay: Record<string, string> = { desk: '250ms', 'pc-innen': '450ms
     <div class="exp-stage" id="exp-stage">
       {scenes.map((scene, si) => (
         <div
-          class="exp-scene"
+          class:list={['exp-scene', scene.artPortrait && 'has-portrait']}
           data-scene={scene.id}
           data-active={scene.id === startScene ? 'true' : undefined}
           aria-hidden={scene.id === startScene ? undefined : 'true'}
@@ -38,47 +48,63 @@ const hotspotDelay: Record<string, string> = { desk: '250ms', 'pc-innen': '450ms
             src={scene.art}
             alt={scene.artAlt}
             widths={[828, 1440, 1920, 2560, 3840]}
-            sizes="(orientation: portrait) 170vh, 100vw"
+            sizes="100vw"
             loading={si === 0 ? 'eager' : 'lazy'}
             fetchpriority={si === 0 ? 'high' : undefined}
             quality={85}
-            class="exp-art"
+            class="exp-art exp-art-l"
           />
+          {scene.artPortrait && (
+            <Image
+              src={scene.artPortrait}
+              alt=""
+              widths={[640, 828, 1080, 1440]}
+              sizes="100vw"
+              loading={si === 0 ? 'eager' : 'lazy'}
+              quality={85}
+              class="exp-art exp-art-p"
+            />
+          )}
           <div class="exp-vignette" aria-hidden="true"></div>
 
-          {scene.hotspots.map((h, i) =>
-            h.target.type === 'bereich' ? (
-              <a
-                href={href(`/${h.target.slug}`)}
-                class={`hotspot hs-${h.labelSide ?? 'right'}`}
-                style={`--hx: ${h.x}%; --hy: ${h.y}%; --pd: ${i * 350}ms`}
-                aria-label={`Bereich öffnen: ${h.label}`}
-              >
-                <span class="hs-ping" aria-hidden="true"></span>
-                <span class="hs-dot" aria-hidden="true">✳</span>
-                <span class="hs-label">{h.label}</span>
-              </a>
-            ) : (
-              <button
-                type="button"
-                class={`hotspot hotspot-scene hs-${h.labelSide ?? 'right'}`}
-                data-goto={h.target.id}
-                style={`--hx: ${h.x}%; --hy: ${h.y}%; --pd: ${i * 350}ms`}
-                aria-label={h.label}
-              >
-                <span class="hs-ping" aria-hidden="true"></span>
-                <span class="hs-dot" aria-hidden="true">+</span>
-                <span class="hs-label">{h.label}</span>
-              </button>
-            )
-          )}
+          {hotspotSets(scene).map((set) => (
+            <div class={`hs-set ${set.cls}`}>
+              {set.spots.map((h, i) =>
+                h.target.type === 'bereich' ? (
+                  <a
+                    href={href(`/${h.target.slug}`)}
+                    class={`hotspot hs-${h.labelSide ?? 'right'}`}
+                    style={`--hx: ${h.x}%; --hy: ${h.y}%; --pd: ${i * 350}ms`}
+                    aria-label={`Bereich öffnen: ${h.label}`}
+                  >
+                    <span class="hs-ping" aria-hidden="true"></span>
+                    <span class="hs-dot" aria-hidden="true">✳</span>
+                    <span class="hs-label">{h.label}</span>
+                  </a>
+                ) : (
+                  <button
+                    type="button"
+                    class={`hotspot hotspot-scene hs-${h.labelSide ?? 'right'}`}
+                    data-goto={h.target.id}
+                    style={`--hx: ${h.x}%; --hy: ${h.y}%; --pd: ${i * 350}ms`}
+                    aria-label={h.label}
+                  >
+                    <span class="hs-ping" aria-hidden="true"></span>
+                    <span class="hs-dot" aria-hidden="true">+</span>
+                    <span class="hs-label">{h.label}</span>
+                  </button>
+                )
+              )}
+            </div>
+          ))}
         </div>
       ))}
 
       <!-- Cinema-Sequenz: Seitenwand wird abgeschraubt (Video, endet auf der Innenansicht) -->
       <div class="exp-video" id="exp-video" hidden aria-hidden="true">
         <video
-          src={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/media/pc-aufschrauben.mp4`}
+          data-src-landscape={`${base}/media/pc-aufschrauben.mp4`}
+          data-src-portrait={`${base}/media/pc-aufschrauben-portrait.mp4`}
           playsinline
           muted
           preload="metadata"
@@ -125,16 +151,16 @@ const hotspotDelay: Record<string, string> = { desk: '250ms', 'pc-innen': '450ms
   const videoWrap = document.getElementById('exp-video');
   const video = videoWrap?.querySelector('video') ?? null;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const portraitMq = window.matchMedia('(orientation: portrait)');
 
   if (root && viewport) {
-    // Beim Laden mittig ausrichten (mobil ist die Bühne breiter als der Bildschirm)
+    // Beim Laden mittig ausrichten (nur relevant, wenn die Bühne breiter als der Bildschirm ist)
     viewport.scrollLeft = (viewport.scrollWidth - viewport.clientWidth) / 2;
 
     const setScene = (id: string, instant = false) => {
       root.querySelectorAll<HTMLElement>('.exp-scene').forEach((s) => {
         const active = s.dataset.scene === id;
         if (active) {
-          // instant: keine Einblende-Animation — nahtlos nach dem Video
           if (instant) s.setAttribute('data-instant', '');
           else s.removeAttribute('data-instant');
           s.setAttribute('data-active', 'true');
@@ -153,7 +179,7 @@ const hotspotDelay: Record<string, string> = { desk: '250ms', 'pc-innen': '450ms
       });
     };
 
-    // Cinema-Sequenz: Video spielt, am Ende übernimmt nahtlos die interaktive Szene
+    // Cinema-Sequenz: Video passend zur Ausrichtung wählen, am Ende nahtlos in die Szene
     let playing = false;
     const hideVideo = () => {
       videoWrap?.classList.remove('on');
@@ -163,6 +189,13 @@ const hotspotDelay: Record<string, string> = { desk: '250ms', 'pc-innen': '450ms
     };
     const playIntro = (done: () => void) => {
       if (!video || !videoWrap || reduced || playing) {
+        done();
+        return;
+      }
+      const src = portraitMq.matches
+        ? video.dataset.srcPortrait
+        : video.dataset.srcLandscape;
+      if (!src) {
         done();
         return;
       }
@@ -177,6 +210,7 @@ const hotspotDelay: Record<string, string> = { desk: '250ms', 'pc-innen': '450ms
         done();
         hideVideo();
       };
+      if (video.getAttribute('src') !== src) video.setAttribute('src', src);
       videoWrap.hidden = false;
       requestAnimationFrame(() => videoWrap.classList.add('on'));
       video.currentTime = 0;
@@ -198,6 +232,7 @@ const hotspotDelay: Record<string, string> = { desk: '250ms', 'pc-innen': '450ms
         if (video && !video.paused) video.pause();
         hideVideo();
         playing = false;
+        root.classList.remove('video-running');
         setScene(id);
       }
     });
