@@ -341,8 +341,10 @@
 .exp-stage {
   position: relative;
   height: 100%;
-  /* mind. Bildschirmbreite; sonst 16:9 zur Höhe — mobil wird seitlich geschwenkt */
-  width: max(100%, calc(var(--exp-h) * 16 / 9));
+  /* exakt 16:9 zur Höhe: Video und Artwork werden nie beschnitten (Schrauben sichtbar!);
+     auf breiten Screens zentriert, auf schmalen wird seitlich geschwenkt */
+  width: calc(var(--exp-h) * 16 / 9);
+  margin-inline: auto;
 }
 .exp-scene {
   position: absolute;
