@@ -50,8 +50,8 @@ const marqueeItems = ['Alle Infos an einem Ort', 'Klick dich durchs Setup', 'Ehr
 
   <section aria-labelledby="bereiche" class="py-14">
     <h2 id="bereiche" class="io mb-3 text-2xl sm:text-4xl">Alle Bereiche</h2>
-    <p class="io mb-8 max-w-xl text-muted">Vier Welten, viele Unterbereiche — und es werden laufend mehr.</p>
-    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+    <p class="io mb-8 max-w-xl text-muted">Von den Setup-Geräten bis ins Innere des PCs — und es werden laufend mehr.</p>
+    <div class:list={['grid gap-5 sm:grid-cols-2', mainCategories.length >= 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3']}>
       {mainCategories.map((c, i) => <CategoryTile category={c} count={countFor(c.id)} index={i} />)}
     </div>
   </section>
