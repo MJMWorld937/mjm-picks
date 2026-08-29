@@ -227,6 +227,8 @@ function hotspotSets(scene: (typeof scenes)[number]) {
       if (!gotoEl?.dataset.goto) return;
       const id = gotoEl.dataset.goto;
       if (id === 'pc-innen') {
+        // Bühne komplett ins Bild holen, damit die Sequenz nicht angeschnitten läuft
+        viewport.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
         playIntro(() => setScene(id, true));
       } else {
         if (video && !video.paused) video.pause();
