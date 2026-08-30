@@ -3,7 +3,8 @@ import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import ProductCard from '../components/ProductCard.astro';
 import CategoryTile from '../components/CategoryTile.astro';
-import { getCategories, getPublishedProducts } from '../lib/data';
+import KategorieRanking from '../components/KategorieRanking.astro';
+import { getCategories, getPicksScores, getPublishedProducts } from '../lib/data';
 import { categoryArt } from '../lib/art';
 import { BRAND, href } from '../lib/site';
 import type { Category } from '../lib/types';
@@ -35,6 +36,8 @@ const products = (await getPublishedProducts()).filter((p) =>
 const allProducts = await getPublishedProducts();
 const countFor = (catId: string) =>
   allProducts.filter((p) => p.categories.some((c) => c.id === catId)).length;
+// Unveröffentlichte Scores filtert bereits die RLS-Policy heraus (scores_read: published OR is_admin).
+const scores = await getPicksScores();
 
 const crumbs = [
   { name: BRAND, path: '/' },
@@ -99,8 +102,13 @@ const breadcrumbLd = {
   )}
 
   {products.length > 0 ? (
-    <div class="grid gap-5 pb-8 sm:grid-cols-2 lg:grid-cols-3">
-      {products.map((p, i) => <ProductCard product={p} index={i} />)}
+    <div class="grid gap-8 pb-8 lg:grid-cols-[1fr_18rem] lg:items-start">
+      <div class="grid gap-5 sm:grid-cols-2">
+        {products.map((p, i) => <ProductCard product={p} index={i} />)}
+      </div>
+      <div class="lg:sticky lg:top-24">
+        <KategorieRanking products={products} scores={scores} categoryName={category.name} />
+      </div>
     </div>
   ) : (
     <section class="mb-8 rounded-2xl border border-line bg-coal p-8 text-muted">
