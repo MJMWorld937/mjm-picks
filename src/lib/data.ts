@@ -50,6 +50,7 @@ export function getPublishedProducts(): Promise<AffiliateProduct[]> {
       title: row.title,
       brand: row.brand,
       asin: row.asin,
+      affiliateUrl: row.affiliate_url ?? null,
       featured: row.featured,
       sortOrder: row.sort_order,
       source: row.source,

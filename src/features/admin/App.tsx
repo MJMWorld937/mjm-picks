@@ -14,6 +14,7 @@ interface ProductRow {
   pick_no?: number;
   slug: string;
   asin: string | null;
+  affiliate_url: string | null;
   title: string;
   brand: string;
   status: 'draft' | 'published' | 'archived';
@@ -37,6 +38,7 @@ interface EditorialRow {
 const emptyProduct: ProductRow = {
   slug: '',
   asin: null,
+  affiliate_url: null,
   title: '',
   brand: '',
   status: 'draft',
@@ -151,6 +153,24 @@ function ProductForm({
 
   const detectedAsin = useMemo(() => parseAsin(amazonInput), [amazonInput]);
 
+  // Spiegelt die Prüfung in lib/providers/amazon.ts: nur https und Amazon-eigene Hosts.
+  const affiliateUrlValid = useMemo(() => {
+    const raw = product.affiliate_url?.trim();
+    if (!raw) return false;
+    try {
+      const url = new URL(raw);
+      return url.protocol === 'https:' && /(^|\.)amazon\.[a-z.]+$|(^|\.)amzn\.to$|(^|\.)amzn\.eu$|(^|\.)link\.amazon$/i.test(url.hostname);
+    } catch {
+      return false;
+    }
+  }, [product.affiliate_url]);
+
+  const affiliateUrlHasTag = useMemo(() => {
+    const raw = product.affiliate_url?.trim();
+    // Kurzlinks (link.amazon/…) tragen das Tag intern, dort ist kein tag= sichtbar.
+    return !!raw && (/[?&]tag=/.test(raw) || /link\.amazon|amzn\.(to|eu)/i.test(raw));
+  }, [product.affiliate_url]);
+
   function set<K extends keyof ProductRow>(key: K, value: ProductRow[K]) {
     setProduct((p) => ({ ...p, [key]: value }));
   }
@@ -163,6 +183,7 @@ function ProductForm({
       asin: detectedAsin ?? product.asin,
       slug: product.slug || slugify(product.title),
       image_url: product.image_url?.trim() || null,
+      affiliate_url: product.affiliate_url?.trim() || null,
     };
     if (!row.title) {
       setMsg('Titel fehlt.');
@@ -217,10 +238,34 @@ function ProductForm({
         <Field label="Amazon-URL oder ASIN" hint={detectedAsin ? `Erkannte ASIN: ${detectedAsin}` : 'Produktlink von amazon.de einfügen — die ASIN wird automatisch erkannt.'}>
           <input className={inputCls} value={amazonInput} onChange={(e) => setAmazonInput(e.target.value)} placeholder="https://www.amazon.de/dp/…" />
         </Field>
-        {detectedAsin && (
+        {detectedAsin && !affiliateUrlValid && (
           <p className="text-xs text-muted">
             Affiliate-Link-Vorschau: <code className="text-accent-soft">https://www.amazon.de/dp/{detectedAsin}?tag=…</code>
           </p>
+        )}
+        <Field
+          label="Eigener PartnerNet-Link (optional)"
+          hint="Fertigen Link aus dem PartnerNet (SiteStripe) einfügen — dann bleiben linkCode und linkId für die Amazon-Berichte erhalten. Leer lassen, wenn der Link oben automatisch gebaut werden soll."
+        >
+          <input
+            className={inputCls}
+            value={product.affiliate_url ?? ''}
+            onChange={(e) => set('affiliate_url', e.target.value)}
+            placeholder="https://www.amazon.de/dp/…?tag=mjmpicks-21&linkCode=ll2&linkId=…"
+          />
+        </Field>
+        {product.affiliate_url?.trim() && (
+          affiliateUrlValid ? (
+            <p className="text-xs text-muted">
+              {affiliateUrlHasTag
+                ? 'Dieser Link wird verwendet.'
+                : 'Dieser Link wird verwendet — Achtung: Er enthält kein tag=, dir wird dann keine Provision zugeordnet.'}
+            </p>
+          ) : (
+            <p className="text-xs text-red-400">
+              Kein gültiger Amazon-Link (nur https und Amazon-Domains). Solange er ungültig ist, wird der Link aus der ASIN gebaut.
+            </p>
+          )
         )}
       </section>
 

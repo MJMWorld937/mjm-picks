@@ -28,6 +28,7 @@ export interface AffiliateProduct {
   title: string;
   brand: string;
   asin: string | null;
+  affiliateUrl: string | null;
   featured: boolean;
   sortOrder: number;
   source: 'manual' | 'api';
