@@ -121,3 +121,25 @@ export interface RankingGroup {
   sortOrder: number;
   description: string | null;
 }
+
+/** Eine Messreihe aus genau einem fremden Testlauf — nie eine eigene Messung. */
+export interface BenchmarkSeries {
+  id: string;
+  slug: string;
+  name: string;
+  unit: string;
+  higherIsBetter: boolean;
+  sourceName: string;
+  sourceUrl: string;
+  method: string;
+  measuredAt: string | null;
+  sortOrder: number;
+}
+
+/** Ein Messwert einer Reihe zu einem Produkt. */
+export interface BenchmarkValue {
+  seriesId: string;
+  productId: string;
+  value: number;
+  note: string | null;
+}

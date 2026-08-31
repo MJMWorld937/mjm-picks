@@ -5,8 +5,9 @@ import AmazonCta from '../../components/AmazonCta.astro';
 import PicksAnalyse from '../../components/PicksAnalyse.astro';
 import ProsCons from '../../components/ProsCons.astro';
 import Datenblatt from '../../components/Datenblatt.astro';
+import Benchmark from '../../components/Benchmark.astro';
 import ProductCard from '../../components/ProductCard.astro';
-import { getCommunityPatterns, getConflicts, getPartnerTag, getPicksScores, getProductSpecs, getPublishedProducts, getSourceItems, getSpecFields } from '../../lib/data';
+import { getCommunityPatterns, getConflicts, getPartnerTag, getPicksScores, getProductSpecs, getPublishedProducts, getSourceItems, getSpecFields, getBenchmarkSeries, getBenchmarkValues } from '../../lib/data';
 import { categoryArt } from '../../lib/art';
 import { getAmazonOffer } from '../../lib/providers/amazon';
 import { BRAND, href } from '../../lib/site';
@@ -31,8 +32,8 @@ const ed = product.editorial;
 const all = await getPublishedProducts();
 const alternative = all.find((p) => p.id === (ed as any).alternative_product_id) ?? null;
 
-const [allItems, allPatterns, allConflicts, allScores, allSpecs, specFields] = await Promise.all([
-  getSourceItems(), getCommunityPatterns(), getConflicts(), getPicksScores(), getProductSpecs(), getSpecFields(),
+const [allItems, allPatterns, allConflicts, allScores, allSpecs, specFields, benchSeries, benchValues] = await Promise.all([
+  getSourceItems(), getCommunityPatterns(), getConflicts(), getPicksScores(), getProductSpecs(), getSpecFields(), getBenchmarkSeries(), getBenchmarkValues(),
 ]);
 const sourceItems = allItems.filter((x) => x.productId === product.id);
 const patterns = allPatterns.filter((x) => x.productId === product.id);
@@ -50,6 +51,7 @@ const bewerteteDerKlasse = gruppe
       .sort((a, b) => b.s!.total - a.s!.total)
   : [];
 const platz = bewerteteDerKlasse.findIndex((x) => x.p.id === product.id) + 1;
+const geschwister = cat ? all.filter((p) => p.categories.some((c) => c.id === cat.id)) : [];
 
 const related = all
   .filter((p) => p.id !== product.id && p.categories.some((c) => cat && c.id === cat.id))
@@ -178,6 +180,8 @@ const breadcrumbLd = {
       )}
 
       <Datenblatt specs={specs} fields={specFields} checkedAt={product.specsCheckedAt} />
+
+      <Benchmark product={product} geschwister={geschwister} series={benchSeries} values={benchValues} />
 
       <PicksAnalyse
         score={picksScore}

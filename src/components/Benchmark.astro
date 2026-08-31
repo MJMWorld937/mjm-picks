@@ -1,0 +1,193 @@
+---
+// Leistungsvergleich aus fremden Messungen. Wir messen nicht selbst — jede Reihe stammt
+// aus genau einem Testlauf einer Redaktion, damit die Balken untereinander gelten.
+// Verglichen wird nur innerhalb derselben Einsatzklasse.
+import type { AffiliateProduct, BenchmarkSeries, BenchmarkValue } from '../lib/types';
+import { href } from '../lib/site';
+
+interface Props {
+  product: AffiliateProduct;
+  /** Alle Produkte, aus denen das Vergleichsfeld gebildet wird (gleiche Kategorie) */
+  geschwister: AffiliateProduct[];
+  series: BenchmarkSeries[];
+  values: BenchmarkValue[];
+}
+const { product, geschwister, series, values } = Astro.props;
+
+const zahl = (n: number) =>
+  Number.isInteger(n) ? String(n) : n.toFixed(1).replace('.', ',');
+
+// Je Reihe: alle Werte der Klasse einsammeln, absteigend nach Güte sortieren.
+const bloecke = series
+  .map((reihe) => {
+    const feld = geschwister
+      .filter((p) => p.rankingGroup === product.rankingGroup)
+      .map((p) => {
+        const v = values.find((x) => x.seriesId === reihe.id && x.productId === p.id);
+        return v ? { produkt: p, wert: v.value, note: v.note } : null;
+      })
+      .filter((x): x is { produkt: AffiliateProduct; wert: number; note: string | null } => x !== null)
+      .sort((a, b) => (reihe.higherIsBetter ? b.wert - a.wert : a.wert - b.wert));
+
+    const spanne = Math.max(...feld.map((f) => f.wert), 0);
+    return { reihe, feld, spanne };
+  })
+  // Unter drei Karten ist ein Vergleich keiner, und das eigene Produkt muss dabei sein.
+  .filter((b) => b.feld.length >= 3 && b.feld.some((f) => f.produkt.id === product.id));
+
+const datum = (iso: string | null) =>
+  iso ? new Date(iso).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }) : null;
+---
+
+{bloecke.length > 0 && (
+  <section aria-labelledby="benchmark" class="mt-10">
+    <h2 id="benchmark" class="mb-1 text-xl sm:text-2xl">Im Vergleich</h2>
+    <p class="mb-5 text-xs leading-relaxed text-faint">
+      Gemessen haben andere — wir stellen die Zahlen nebeneinander. Jede Reihe stammt aus
+      einem einzigen Testlauf, damit die Werte untereinander gelten. Verglichen wird nur
+      innerhalb der Klasse {product.rankingGroup}.
+    </p>
+
+    <div class="flex flex-col gap-7">
+      {bloecke.map(({ reihe, feld, spanne }) => (
+        <figure class="m-0">
+          <figcaption class="mb-3">
+            <span class="meta text-paper!">{reihe.name}</span>
+            <span class="ml-2 text-xs text-faint">{reihe.unit}</span>
+          </figcaption>
+
+          <div class="bench">
+            {feld.map(({ produkt, wert, note }) => {
+              const selbst = produkt.id === product.id;
+              const anteil = spanne > 0 ? Math.max(4, (wert / spanne) * 100) : 4;
+              return (
+                <div class:list={['bench-zeile', { selbst }]}>
+                  {selbst ? (
+                    <span class="bench-name" aria-current="true">{produkt.title}</span>
+                  ) : (
+                    <a class="bench-name" href={href(`/produkt/${produkt.slug}`)}>{produkt.title}</a>
+                  )}
+                  <div class="bench-spur">
+                    <div class="bench-balken" style={`--anteil: ${anteil}%`}>
+                      <span class="bench-wert">{zahl(wert)}</span>
+                    </div>
+                  </div>
+                  {note && <span class="bench-note">{note}</span>}
+                </div>
+              );
+            })}
+          </div>
+
+          <p class="bench-quelle">
+            {reihe.method} Gemessen von{' '}
+            <a href={reihe.sourceUrl} rel="noopener noreferrer" target="_blank">{reihe.sourceName}</a>
+            {datum(reihe.measuredAt) && <>, {datum(reihe.measuredAt)}</>}.
+          </p>
+        </figure>
+      ))}
+    </div>
+
+    <p class="mt-4 text-xs text-faint">
+      Karten mit demselben Grafikchip liegen dicht beieinander — die Unterschiede zwischen
+      den Modellen eines Herstellers sind kleiner als der Abstand zwischen zwei Chips.
+      Wie wir damit umgehen, steht in der <a class="underline hover:text-muted" href={href('/methodik')}>Methodik</a>.
+    </p>
+  </section>
+)}
+
+<style>
+  .bench {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+  .bench-zeile {
+    display: grid;
+    grid-template-columns: minmax(7rem, 13rem) 1fr;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .bench-name {
+    font-size: 0.78rem;
+    line-height: 1.3;
+    color: var(--color-muted);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+  a.bench-name:hover {
+    color: var(--color-paper);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .bench-zeile.selbst .bench-name {
+    color: var(--color-paper);
+    font-weight: 500;
+  }
+  .bench-spur {
+    background: color-mix(in oklab, var(--color-paper) 4%, transparent);
+    border-radius: 0.35rem;
+    overflow: hidden;
+  }
+  .bench-balken {
+    width: var(--anteil);
+    min-height: 1.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 0.5rem;
+    border-radius: 0.35rem;
+    background: color-mix(in oklab, var(--color-accent) 22%, transparent);
+  }
+  .bench-zeile.selbst .bench-balken {
+    background: var(--color-accent);
+  }
+  .bench-wert {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-paper);
+  }
+  .bench-zeile.selbst .bench-wert {
+    color: var(--color-ink);
+    font-weight: 500;
+  }
+  .bench-note {
+    grid-column: 2;
+    font-size: 0.7rem;
+    color: var(--color-faint);
+  }
+  .bench-quelle {
+    margin: 0.9rem 0 0;
+    font-size: 0.72rem;
+    line-height: 1.5;
+    color: var(--color-faint);
+  }
+  .bench-quelle a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .bench-quelle a:hover {
+    color: var(--color-muted);
+  }
+
+  @media (max-width: 30rem) {
+    .bench-zeile {
+      grid-template-columns: 1fr;
+      gap: 0.2rem;
+    }
+    .bench-note {
+      grid-column: 1;
+    }
+  }
+
+  /* Balken wachsen beim Erscheinen ein — nur wenn niemand widerspricht. */
+  @media (prefers-reduced-motion: no-preference) {
+    .bench-balken {
+      animation: benchWachsen 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+    }
+    @keyframes benchWachsen {
+      from { width: 0; }
+    }
+  }
+</style>

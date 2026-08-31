@@ -224,3 +224,47 @@ export function getRankingGroups(): Promise<RankingGroup[]> {
   })();
   return rankingGroupsCache;
 }
+
+// ---------- Benchmarks: fremde Messreihen, sauber zitiert ----------
+import type { BenchmarkSeries, BenchmarkValue } from './types';
+
+let benchSeriesCache: Promise<BenchmarkSeries[]> | null = null;
+export function getBenchmarkSeries(): Promise<BenchmarkSeries[]> {
+  benchSeriesCache ??= (async () => {
+    const { data, error } = await supabase
+      .from('benchmark_series')
+      .select('id, slug, name, unit, higher_is_better, source_name, source_url, method, measured_at, sort_order')
+      .order('sort_order');
+    if (error) throw new Error(`benchmark_series: ${error.message}`);
+    return (data ?? []).map((r: any): BenchmarkSeries => ({
+      id: r.id,
+      slug: r.slug,
+      name: r.name,
+      unit: r.unit,
+      higherIsBetter: r.higher_is_better,
+      sourceName: r.source_name,
+      sourceUrl: r.source_url,
+      method: r.method,
+      measuredAt: r.measured_at,
+      sortOrder: r.sort_order,
+    }));
+  })();
+  return benchSeriesCache;
+}
+
+let benchValuesCache: Promise<BenchmarkValue[]> | null = null;
+export function getBenchmarkValues(): Promise<BenchmarkValue[]> {
+  benchValuesCache ??= (async () => {
+    const { data, error } = await supabase
+      .from('benchmark_values')
+      .select('series_id, product_id, value, note');
+    if (error) throw new Error(`benchmark_values: ${error.message}`);
+    return (data ?? []).map((r: any): BenchmarkValue => ({
+      seriesId: r.series_id,
+      productId: r.product_id,
+      value: Number(r.value),
+      note: r.note,
+    }));
+  })();
+  return benchValuesCache;
+}
