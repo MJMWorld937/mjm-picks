@@ -39,6 +39,18 @@ const patterns = allPatterns.filter((x) => x.productId === product.id);
 const productConflicts = allConflicts.filter((x) => x.productId === product.id);
 const picksScore = allScores.find((x) => x.productId === product.id) ?? null;
 const specs = allSpecs.filter((x) => x.productId === product.id);
+// Platz innerhalb der Einsatzklasse. Verglichen wird nur, was denselben Zweck hat und
+// im selben Unterbereich liegt — sonst stuende eine Einsteigerkarte gegen eine Oberklassekarte.
+const gruppe = product.rankingGroup;
+const bewerteteDerKlasse = gruppe
+  ? all
+      .filter((p) => p.rankingGroup === gruppe && cat && p.categories.some((c) => c.id === cat.id))
+      .map((p) => ({ p, s: allScores.find((x) => x.productId === p.id) ?? null }))
+      .filter((x) => x.s !== null)
+      .sort((a, b) => b.s!.total - a.s!.total)
+  : [];
+const platz = bewerteteDerKlasse.findIndex((x) => x.p.id === product.id) + 1;
+
 const related = all
   .filter((p) => p.id !== product.id && p.categories.some((c) => cat && c.id === cat.id))
   .slice(0, 3);
@@ -167,7 +179,15 @@ const breadcrumbLd = {
 
       <Datenblatt specs={specs} fields={specFields} checkedAt={product.specsCheckedAt} />
 
-      <PicksAnalyse score={picksScore} items={sourceItems} patterns={patterns} conflicts={productConflicts} />
+      <PicksAnalyse
+        score={picksScore}
+        items={sourceItems}
+        patterns={patterns}
+        conflicts={productConflicts}
+        rankingGroup={gruppe}
+        rankingPosition={platz > 0 ? platz : null}
+        rankingTotal={bewerteteDerKlasse.length}
+      />
     </article>
 
     <aside class="lg:sticky lg:top-24 lg:self-start">

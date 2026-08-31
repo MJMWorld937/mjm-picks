@@ -4,7 +4,7 @@ import Base from '../layouts/Base.astro';
 import ProductCard from '../components/ProductCard.astro';
 import CategoryTile from '../components/CategoryTile.astro';
 import KategorieRanking from '../components/KategorieRanking.astro';
-import { getCategories, getPicksScores, getPublishedProducts } from '../lib/data';
+import { getCategories, getPicksScores, getPublishedProducts, getRankingGroups } from '../lib/data';
 import { categoryArt } from '../lib/art';
 import { BRAND, href } from '../lib/site';
 import type { Category } from '../lib/types';
@@ -38,6 +38,7 @@ const countFor = (catId: string) =>
   allProducts.filter((p) => p.categories.some((c) => c.id === catId)).length;
 // Unveröffentlichte Scores filtert bereits die RLS-Policy heraus (scores_read: published OR is_admin).
 const scores = await getPicksScores();
+const rankingGroups = await getRankingGroups();
 
 const crumbs = [
   { name: BRAND, path: '/' },
@@ -110,7 +111,7 @@ const breadcrumbLd = {
           {products.map((p, i) => <ProductCard product={p} index={i} />)}
         </div>
         <div class="lg:sticky lg:top-24">
-          <KategorieRanking products={products} scores={scores} categoryName={category.name} />
+          <KategorieRanking products={products} scores={scores} groups={rankingGroups} categoryName={category.name} />
         </div>
       </div>
     ) : (

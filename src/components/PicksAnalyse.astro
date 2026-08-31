@@ -8,8 +8,17 @@ interface Props {
   items: SourceItemPublic[];
   patterns: CommunityPattern[];
   conflicts: ProductConflict[];
+  /** Einsatzklasse des Produkts, z. B. WQHD */
+  rankingGroup?: string | null;
+  /** Platz innerhalb der Klasse, 1-basiert */
+  rankingPosition?: number | null;
+  /** Wie viele Picks der Klasse bewertet sind */
+  rankingTotal?: number | null;
 }
-const { score, items, patterns, conflicts } = Astro.props;
+const { score, items, patterns, conflicts, rankingGroup, rankingPosition, rankingTotal } = Astro.props;
+
+// Unter drei bewerteten Picks sagt ein Platz noch nichts aus.
+const zeigeEinordnung = Boolean(rankingGroup && rankingPosition && rankingTotal && rankingTotal >= 3);
 
 const hasContent = score !== null || items.length > 0 || patterns.length > 0;
 const typeLabel: Record<string, string> = {
@@ -51,8 +60,8 @@ const bars: { label: string; key: 'p' | 'i' | 'c' | 'k' | 's'; desc: string }[] 
           <span class="font-display text-5xl font-bold text-accent-soft">{(score.total / 10).toFixed(1)}</span>
           <span class="meta mt-1">PICKS-Score / 10</span>
           <span class="mt-3 text-xs text-muted">Confidence: {Math.round(score.confidencePct)} %</span>
-          {score.rankingGroup && score.rankingPosition && score.rankingTotal && score.rankingTotal >= 5 && (
-            <span class="mt-2 text-xs text-muted">#{score.rankingPosition} von {score.rankingTotal} · {score.rankingGroup}</span>
+          {zeigeEinordnung && (
+            <span class="mt-2 text-center text-xs text-muted">Platz {rankingPosition} von {rankingTotal}<br />in der Klasse {rankingGroup}</span>
           )}
         </div>
         <div class="flex flex-col justify-center gap-2.5">

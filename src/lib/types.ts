@@ -36,6 +36,8 @@ export interface AffiliateProduct {
   imageSource: 'press' | 'own' | 'none' | 'api';
   categories: Category[];
   editorial: EditorialContent;
+  /** Einsatzklasse innerhalb des Unterbereichs, z. B. WQHD */
+  rankingGroup: string | null;
   /** Herkunft des technischen Datenblatts */
   specsSourceUrl: string | null;
   specsSourceName: string | null;
@@ -111,4 +113,11 @@ export interface ProductSpec {
   value: string;
   sourceUrl: string | null;
   sourceName: string | null;
+}
+
+/** Eine Einsatzklasse mit Reihenfolge und Erklärung. */
+export interface RankingGroup {
+  name: string;
+  sortOrder: number;
+  description: string | null;
 }

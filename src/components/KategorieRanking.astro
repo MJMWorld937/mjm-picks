@@ -1,60 +1,95 @@
 ---
-import type { AffiliateProduct, PicksScore } from '../lib/types';
+import type { AffiliateProduct, PicksScore, RankingGroup } from '../lib/types';
 import { href } from '../lib/site';
 
 interface Props {
   products: AffiliateProduct[];
   scores: PicksScore[];
+  groups: RankingGroup[];
   categoryName: string;
   /** Slug des Produkts, das gerade angezeigt wird — wird in der Liste hervorgehoben. */
   activeSlug?: string;
 }
-const { products, scores, categoryName, activeSlug } = Astro.props;
+const { products, scores, groups, categoryName, activeSlug } = Astro.props;
 
 // Nur veröffentlichte Scores fließen ins Ranking; Picks ohne Score hängen wir
 // unsortiert hinten an, statt sie zu verschweigen.
 const byId = new Map(scores.map((s) => [s.productId, s]));
-const ranked = products
-  .map((product) => ({ product, score: byId.get(product.id) ?? null }))
-  .sort((a, b) => {
-    if (a.score && b.score) return b.score.total - a.score.total;
-    if (a.score) return -1;
-    if (b.score) return 1;
-    return a.product.title.localeCompare(b.product.title, 'de');
-  });
+const sortiere = (
+  a: { product: AffiliateProduct; score: PicksScore | null },
+  b: { product: AffiliateProduct; score: PicksScore | null }
+) => {
+  if (a.score && b.score) return b.score.total - a.score.total;
+  if (a.score) return -1;
+  if (b.score) return 1;
+  return a.product.title.localeCompare(b.product.title, 'de');
+};
 
-const mitScore = ranked.filter((r) => r.score).length;
+const alle = products.map((product) => ({ product, score: byId.get(product.id) ?? null }));
+
+// Nach Einsatzklasse gruppieren. Ein reines Score-Ranking würde eine sehr gute
+// Einsteigerkarte über eine sehr gute Oberklassekarte stellen — verglichen wird
+// deshalb nur innerhalb einer Klasse.
+const reihenfolge = new Map(groups.map((g) => [g.name, g.sortOrder]));
+const namen = [...new Set(alle.map((e) => e.product.rankingGroup).filter(Boolean))] as string[];
+namen.sort((a, b) => (reihenfolge.get(a) ?? 9999) - (reihenfolge.get(b) ?? 9999));
+
+const bloecke = namen.map((name) => ({
+  name,
+  beschreibung: groups.find((g) => g.name === name)?.description ?? null,
+  eintraege: alle.filter((e) => e.product.rankingGroup === name).sort(sortiere),
+}));
+
+// Was keiner Klasse zugeordnet ist, kommt als eigener Block ans Ende
+const ohneGruppe = alle.filter((e) => !e.product.rankingGroup).sort(sortiere);
+if (ohneGruppe.length > 0) {
+  bloecke.push({ name: 'Weitere Picks', beschreibung: null, eintraege: ohneGruppe });
+}
+
+const ohneScore = alle.filter((e) => !e.score).length;
 const fmt = (total: number) => (total / 10).toFixed(1).replace('.', ',');
 ---
 
-{ranked.length > 1 && (
+{alle.length > 1 && (
   <aside aria-label={`Rangliste ${categoryName}`} class="rank">
-    <p class="meta mb-3">Rangliste {categoryName}</p>
-    <ol class="space-y-1">
-      {ranked.map((entry, i) => {
-        const isActive = activeSlug && entry.product.slug === activeSlug;
-        return (
-          <li>
-            <a
-              href={href(`/produkt/${entry.product.slug}`)}
-              class:list={['row', { active: isActive }]}
-              aria-current={isActive ? 'page' : undefined}
-            >
-              <span class="pos" aria-hidden="true">{entry.score ? i + 1 : '–'}</span>
-              <span class="name">{entry.product.title}</span>
-              {entry.score ? (
-                <span class="val">{fmt(entry.score.total)}</span>
-              ) : (
-                <span class="val val-none" title="Für einen Score reicht die Quellenlage noch nicht">·</span>
-              )}
-            </a>
-          </li>
-        );
-      })}
-    </ol>
-    <p class="mt-3 text-xs leading-relaxed text-muted">
-      Sortiert nach <a class="underline hover:text-paper" href={href('/methodik')}>PICKS-Score</a>.
-      {mitScore < ranked.length && ' Ein Punkt steht für einen Pick, dessen Quellenlage für einen Score noch nicht reicht.'}
+    <p class="meta mb-1">Rangliste {categoryName}</p>
+    <p class="mb-4 text-xs leading-relaxed text-faint">Nach Einsatzklasse getrennt — verglichen wird nur, was denselben Zweck hat.</p>
+
+    {bloecke.map((block) => (
+      <section class="block">
+        <h3 class="gruppe">
+          {block.name}
+          {block.eintraege.length > 1 && <span class="zahl">{block.eintraege.length}</span>}
+        </h3>
+        {block.beschreibung && <p class="erklaerung">{block.beschreibung}</p>}
+        <ol class="space-y-1">
+          {block.eintraege.map((entry, i) => {
+            const isActive = activeSlug && entry.product.slug === activeSlug;
+            return (
+              <li>
+                <a
+                  href={href(`/produkt/${entry.product.slug}`)}
+                  class:list={['row', { active: isActive }]}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  <span class="pos" aria-hidden="true">{entry.score ? i + 1 : '–'}</span>
+                  <span class="name">{entry.product.title}</span>
+                  {entry.score ? (
+                    <span class="val">{fmt(entry.score.total)}</span>
+                  ) : (
+                    <span class="val val-none" title="Für einen Score reicht die Quellenlage noch nicht">·</span>
+                  )}
+                </a>
+              </li>
+            );
+          })}
+        </ol>
+      </section>
+    ))}
+
+    <p class="mt-4 border-t border-line pt-3 text-xs leading-relaxed text-muted">
+      Innerhalb jeder Klasse sortiert nach <a class="underline hover:text-paper" href={href('/methodik')}>PICKS-Score</a>.
+      {ohneScore > 0 && ' Ein Punkt steht für einen Pick, dessen Quellenlage für einen Score noch nicht reicht.'}
     </p>
   </aside>
 )}
@@ -65,6 +100,31 @@ const fmt = (total: number) => (total / 10).toFixed(1).replace('.', ',');
     border-radius: 1rem;
     background: var(--coal);
     padding: 1.25rem;
+  }
+  .block + .block {
+    margin-top: 1.4rem;
+  }
+  .gruppe {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-family: var(--font-display, sans-serif);
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--paper);
+    margin: 0 0 0.15rem;
+  }
+  .zahl {
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.7rem;
+    color: var(--faint);
+  }
+  .erklaerung {
+    margin: 0 0 0.5rem;
+    font-size: 0.72rem;
+    line-height: 1.4;
+    color: var(--faint);
   }
   .row {
     display: grid;

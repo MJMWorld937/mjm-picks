@@ -61,6 +61,7 @@ export function getPublishedProducts(): Promise<AffiliateProduct[]> {
         .filter(Boolean)
         .sort((a: Category, b: Category) => a.sort_order - b.sort_order),
       editorial: { ...emptyEditorial, ...(row.product_editorial ?? {}) },
+      rankingGroup: row.ranking_group ?? null,
       specsSourceUrl: row.specs_source_url ?? null,
       specsSourceName: row.specs_source_name ?? null,
       specsCheckedAt: row.specs_checked_at ?? null,
@@ -168,7 +169,7 @@ export function getPicksScores(): Promise<PicksScore[]> {
 }
 
 // ---------- Technische Datenblätter ----------
-import type { ProductSpec, SpecField } from './types';
+import type { ProductSpec, RankingGroup, SpecField } from './types';
 
 let specFieldsCache: Promise<SpecField[]> | null = null;
 export function getSpecFields(): Promise<SpecField[]> {
@@ -205,4 +206,21 @@ export function getProductSpecs(): Promise<ProductSpec[]> {
     }));
   })();
   return specsCache;
+}
+
+let rankingGroupsCache: Promise<RankingGroup[]> | null = null;
+export function getRankingGroups(): Promise<RankingGroup[]> {
+  rankingGroupsCache ??= (async () => {
+    const { data, error } = await supabase
+      .from('ranking_groups')
+      .select('name, sort_order, description')
+      .order('sort_order');
+    if (error) throw new Error(`ranking_groups: ${error.message}`);
+    return (data ?? []).map((r: any): RankingGroup => ({
+      name: r.name,
+      sortOrder: r.sort_order,
+      description: r.description,
+    }));
+  })();
+  return rankingGroupsCache;
 }
