@@ -2,6 +2,10 @@
 // Leistungsvergleich aus fremden Messungen. Wir messen nicht selbst — jede Reihe stammt
 // aus genau einem Testlauf einer Redaktion, damit die Balken untereinander gelten.
 // Verglichen wird nur innerhalb derselben Einsatzklasse.
+//
+// Verglichen werden Kartenmodelle, nicht einzelne Herstellervarianten: Vier Karten mit
+// derselben GPU ergäben vier identische Balken und damit keinen Vergleich. Deshalb steht
+// je Modell eine Zeile, und die Variante dieser Seite ist darin markiert.
 import type { AffiliateProduct, BenchmarkSeries, BenchmarkValue } from '../lib/types';
 import { href } from '../lib/site';
 
@@ -17,23 +21,63 @@ const { product, geschwister, series, values } = Astro.props;
 const zahl = (n: number) =>
   Number.isInteger(n) ? String(n) : n.toFixed(1).replace('.', ',');
 
-// Je Reihe: alle Werte der Klasse einsammeln, absteigend nach Güte sortieren.
+// Die Chip-Bezeichnung aus dem Produkttitel, etwa 'Radeon RX 9070 XT'.
+// Zwei Fallstricke, die das Muster bewusst umgeht:
+// Der Die-Name aus dem Datenblatt taugt nicht — in Navi 48 stecken RX 9070 GRE, RX 9070
+// und RX 9070 XT gleichzeitig. Und alles bis zur Klammer zu nehmen taugt auch nicht, weil
+// dann Herstellerzusätze mitkommen und 'RX 9060 XT' von 'RX 9060 XT OC' getrennt würde.
+const bezeichnungVon = (p: AffiliateProduct) => {
+  const treffer = p.title.match(
+    /Radeon RX \d{3,4}(?:\s+(?:XT|XTX|GRE))*|GeForce RTX \d{4}(?:\s+Ti)?|Arc [AB]\d{3}/
+  );
+  return treffer ? treffer[0].trim() : null;
+};
+const klasse = geschwister.filter((p) => p.rankingGroup === product.rankingGroup);
+
 const bloecke = series
   .map((reihe) => {
-    const feld = geschwister
-      .filter((p) => p.rankingGroup === product.rankingGroup)
+    // Erst je Produkt den Messwert holen …
+    const roh = klasse
       .map((p) => {
         const v = values.find((x) => x.seriesId === reihe.id && x.productId === p.id);
-        return v ? { produkt: p, wert: v.value, note: v.note } : null;
+        return v ? { produkt: p, wert: v.value, note: v.note, bezeichnung: bezeichnungVon(p) } : null;
       })
-      .filter((x): x is { produkt: AffiliateProduct; wert: number; note: string | null } => x !== null)
-      .sort((a, b) => (reihe.higherIsBetter ? b.wert - a.wert : a.wert - b.wert));
+      .filter((x): x is { produkt: AffiliateProduct; wert: number; note: string | null; bezeichnung: string | null } => x !== null);
 
+    // … dann Varianten desselben Kartenmodells zu einer Zeile zusammenfassen.
+    const gruppen = new Map<string, { label: string; wert: number; note: string | null; modelle: AffiliateProduct[]; eigen: boolean }>();
+    for (const e of roh) {
+      // Ohne erkennbare Bezeichnung bekommt jedes Produkt eine eigene Zeile.
+      const schluessel = e.bezeichnung ?? `produkt:${e.produkt.id}`;
+      const vorhanden = gruppen.get(schluessel);
+      const eigen = e.produkt.id === product.id;
+      if (vorhanden) {
+        vorhanden.modelle.push(e.produkt);
+        vorhanden.eigen ||= eigen;
+        // Weicht ein Modell im Wert ab (etwa werkseitig übertaktet), gilt der eigene Wert.
+        if (eigen) {
+          vorhanden.wert = e.wert;
+          vorhanden.note = e.note;
+        }
+      } else {
+        gruppen.set(schluessel, {
+          label: e.bezeichnung ?? e.produkt.title,
+          wert: e.wert,
+          note: e.note,
+          modelle: [e.produkt],
+          eigen,
+        });
+      }
+    }
+
+    const feld = [...gruppen.values()].sort((a, b) =>
+      reihe.higherIsBetter ? b.wert - a.wert : a.wert - b.wert
+    );
     const spanne = Math.max(...feld.map((f) => f.wert), 0);
     return { reihe, feld, spanne };
   })
-  // Unter drei Karten ist ein Vergleich keiner, und das eigene Produkt muss dabei sein.
-  .filter((b) => b.feld.length >= 3 && b.feld.some((f) => f.produkt.id === product.id));
+  // Unter drei Modellen ist es kein Vergleich, und das eigene Produkt muss dabei sein.
+  .filter((b) => b.feld.length >= 3 && b.feld.some((f) => f.eigen));
 
 const datum = (iso: string | null) =>
   iso ? new Date(iso).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }) : null;
@@ -44,8 +88,9 @@ const datum = (iso: string | null) =>
     <h2 id="benchmark" class="mb-1 text-xl sm:text-2xl">Im Vergleich</h2>
     <p class="mb-5 text-xs leading-relaxed text-faint">
       Gemessen haben andere — wir stellen die Zahlen nebeneinander. Jede Reihe stammt aus
-      einem einzigen Testlauf, damit die Werte untereinander gelten. Verglichen wird nur
-      innerhalb der Klasse {product.rankingGroup}.
+      einem einzigen Testlauf, damit die Werte untereinander gelten. Verglichen werden die
+      Kartenmodelle der Klasse {product.rankingGroup}. Varianten desselben Modells liegen
+      messtechnisch gleichauf und stehen deshalb in einer Zeile.
     </p>
 
     <div class="flex flex-col gap-7">
@@ -57,16 +102,24 @@ const datum = (iso: string | null) =>
           </figcaption>
 
           <div class="bench">
-            {feld.map(({ produkt, wert, note }) => {
-              const selbst = produkt.id === product.id;
+            {feld.map(({ label, wert, note, modelle, eigen }) => {
               const anteil = spanne > 0 ? Math.max(4, (wert / spanne) * 100) : 4;
+              const andere = modelle.filter((m) => m.id !== product.id);
               return (
-                <div class:list={['bench-zeile', { selbst }]}>
-                  {selbst ? (
-                    <span class="bench-name" aria-current="true">{produkt.title}</span>
-                  ) : (
-                    <a class="bench-name" href={href(`/produkt/${produkt.slug}`)}>{produkt.title}</a>
-                  )}
+                <div class:list={['bench-zeile', { selbst: eigen }]}>
+                  <div class="bench-kopf">
+                    <span class="bench-name">{label}</span>
+                    {eigen ? (
+                      <span class="bench-marke">dieses Modell</span>
+                    ) : (
+                      andere.length === 1 && (
+                        <a class="bench-modell" href={href(`/produkt/${andere[0].slug}`)}>{andere[0].title}</a>
+                      )
+                    )}
+                    {!eigen && andere.length > 1 && (
+                      <span class="bench-modell">{andere.length} Modelle im Regal</span>
+                    )}
+                  </div>
                   <div class="bench-spur">
                     <div class="bench-balken" style={`--anteil: ${anteil}%`}>
                       <span class="bench-wert">{zahl(wert)}</span>
@@ -88,9 +141,8 @@ const datum = (iso: string | null) =>
     </div>
 
     <p class="mt-4 text-xs text-faint">
-      Karten mit demselben Grafikchip liegen dicht beieinander — die Unterschiede zwischen
-      den Modellen eines Herstellers sind kleiner als der Abstand zwischen zwei Chips.
-      Wie wir damit umgehen, steht in der <a class="underline hover:text-muted" href={href('/methodik')}>Methodik</a>.
+      Wie wir mit fremden Messungen umgehen, steht in der
+      <a class="underline hover:text-muted" href={href('/methodik')}> Methodik</a>.
     </p>
   </section>
 )}
@@ -99,29 +151,48 @@ const datum = (iso: string | null) =>
   .bench {
     display: flex;
     flex-direction: column;
-    gap: 0.55rem;
+    gap: 0.7rem;
   }
   .bench-zeile {
     display: grid;
-    grid-template-columns: minmax(7rem, 13rem) 1fr;
+    grid-template-columns: minmax(8rem, 14rem) 1fr;
     align-items: center;
     gap: 0.75rem;
   }
+  .bench-kopf {
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+    min-width: 0;
+  }
   .bench-name {
-    font-size: 0.78rem;
+    font-size: 0.8rem;
     line-height: 1.3;
     color: var(--color-muted);
-    text-decoration: none;
     overflow-wrap: anywhere;
-  }
-  a.bench-name:hover {
-    color: var(--color-paper);
-    text-decoration: underline;
-    text-underline-offset: 2px;
   }
   .bench-zeile.selbst .bench-name {
     color: var(--color-paper);
     font-weight: 500;
+  }
+  .bench-marke {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent-soft);
+  }
+  .bench-modell {
+    font-size: 0.68rem;
+    line-height: 1.25;
+    color: var(--color-faint);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+  a.bench-modell:hover {
+    color: var(--color-muted);
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }
   .bench-spur {
     background: color-mix(in oklab, var(--color-paper) 4%, transparent);
@@ -130,20 +201,20 @@ const datum = (iso: string | null) =>
   }
   .bench-balken {
     width: var(--anteil);
-    min-height: 1.6rem;
+    min-height: 1.7rem;
     display: flex;
     align-items: center;
     justify-content: flex-end;
     padding-right: 0.5rem;
     border-radius: 0.35rem;
-    background: color-mix(in oklab, var(--color-accent) 22%, transparent);
+    background: color-mix(in oklab, var(--color-accent) 20%, transparent);
   }
   .bench-zeile.selbst .bench-balken {
     background: var(--color-accent);
   }
   .bench-wert {
     font-family: var(--font-mono);
-    font-size: 0.76rem;
+    font-size: 0.78rem;
     font-variant-numeric: tabular-nums;
     color: var(--color-paper);
   }
@@ -154,6 +225,7 @@ const datum = (iso: string | null) =>
   .bench-note {
     grid-column: 2;
     font-size: 0.7rem;
+    line-height: 1.4;
     color: var(--color-faint);
   }
   .bench-quelle {
@@ -174,7 +246,7 @@ const datum = (iso: string | null) =>
   @media (max-width: 30rem) {
     .bench-zeile {
       grid-template-columns: 1fr;
-      gap: 0.2rem;
+      gap: 0.25rem;
     }
     .bench-note {
       grid-column: 1;
