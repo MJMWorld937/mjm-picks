@@ -1,4 +1,5 @@
 ---
+import Zeichen from '../components/Zeichen.astro';
 import Base from '../layouts/Base.astro';
 import { BRAND, DISCLOSURE } from '../lib/site';
 ---
@@ -8,7 +9,7 @@ import { BRAND, DISCLOSURE } from '../lib/site';
   description="Transparenz: Wie Affiliate-Links auf MJM Picks funktionieren und wie sich diese Seite finanziert."
 >
   <section class="py-12 sm:py-16">
-    <h1 class="text-3xl sm:text-5xl">Affiliate-Hinweis<span class="star" aria-hidden="true">✳</span></h1>
+    <h1 class="text-3xl sm:text-5xl">Affiliate-Hinweis<Zeichen class="star star-anhang" /></h1>
     <div class="prose-mjm mt-8">
       <p class="text-lg"><strong>{DISCLOSURE}</strong></p>
       <h2>Was das konkret bedeutet</h2>

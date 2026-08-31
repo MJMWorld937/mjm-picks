@@ -1,4 +1,5 @@
 ---
+import Zeichen from './Zeichen.astro';
 import { Image } from 'astro:assets';
 import { scenes, type SceneHotspot } from '../content/scenes';
 import { href } from '../lib/site';
@@ -78,7 +79,7 @@ function hotspotSets(scene: (typeof scenes)[number]) {
                     aria-label={`Bereich öffnen: ${h.label}`}
                   >
                     <span class="hs-ping" aria-hidden="true"></span>
-                    <span class="hs-dot" aria-hidden="true">✳</span>
+                    <span class="hs-dot" aria-hidden="true"><Zeichen /></span>
                     <span class="hs-label">{h.label}</span>
                   </a>
                 ) : (

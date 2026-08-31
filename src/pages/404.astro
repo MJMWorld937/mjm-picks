@@ -1,4 +1,5 @@
 ---
+import Zeichen from '../components/Zeichen.astro';
 import Base from '../layouts/Base.astro';
 import { href } from '../lib/site';
 ---
@@ -6,7 +7,7 @@ import { href } from '../lib/site';
 <Base title="Seite nicht gefunden" description="Diese Seite existiert nicht." noindex={true}>
   <section class="py-24 text-center">
     <p class="meta">Fehler 404</p>
-    <h1 class="mt-4 text-4xl sm:text-6xl">Dieser Pick existiert nicht<span class="star" aria-hidden="true">✳</span></h1>
+    <h1 class="mt-4 text-4xl sm:text-6xl">Dieser Pick existiert nicht<Zeichen class="star star-anhang" /></h1>
     <p class="mx-auto mt-6 max-w-md text-muted">
       Die Seite wurde verschoben oder war nie da. Im Regal findest du alles, was es wirklich gibt.
     </p>

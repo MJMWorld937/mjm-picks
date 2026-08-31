@@ -1,4 +1,5 @@
 ---
+import Zeichen from '../components/Zeichen.astro';
 import Base from '../layouts/Base.astro';
 import ProductCard from '../components/ProductCard.astro';
 import CategoryTile from '../components/CategoryTile.astro';
@@ -27,10 +28,10 @@ const marqueeItems = ['Alle Infos an einem Ort', 'Klick dich durchs Setup', 'Ehr
     <h1 class="mt-4 max-w-3xl text-4xl sm:text-6xl">
       {words.map((w, i) => (
         <span class="hw" style={`--d: ${160 + i * 60}ms`}>{w}&nbsp;</span>
-      ))}<span class="hw star star-spin" style={`--d: ${160 + words.length * 60}ms`} aria-hidden="true">✳</span>
+      ))}<span style={`--d: ${160 + words.length * 60}ms`}><Zeichen class="star star-anhang zeichen-stempel" /></span>
     </h1>
     <p class="hw mt-5 max-w-2xl text-lg text-muted" style={`--d: ${320 + words.length * 60}ms`}>
-      Du kennst das: stundenlange Recherche über zig Seiten, bevor du irgendwas kaufst.
+      Du kennst das: stundenlange Recherche über zig Seiten, bevor du irgendwas kaufst.{' '}
       {BRAND} sammelt das Wissen an einem Ort. <strong class="text-paper">Klick dich durchs Setup</strong> —
       jedes Gerät öffnet seinen Bereich. Und der PC lässt sich sogar aufschrauben.
     </p>
@@ -42,7 +43,7 @@ const marqueeItems = ['Alle Infos an einem Ort', 'Klick dich durchs Setup', 'Ehr
     <div class="marquee-track meta">
       {[0, 1].map(() => marqueeItems.concat(marqueeItems).map((item) => (
         <span class="flex items-center gap-3 whitespace-nowrap">
-          <span class="star">✳</span>{item}
+          <Zeichen class="star" />{item}
         </span>
       )))}
     </div>
@@ -59,7 +60,7 @@ const marqueeItems = ['Alle Infos an einem Ort', 'Klick dich durchs Setup', 'Ehr
   {featured.length > 0 && (
     <section aria-labelledby="picks" class="py-10">
       <div class="io mb-3 flex items-baseline justify-between gap-4">
-        <h2 id="picks" class="text-2xl sm:text-4xl">Die Abkürzung: MJM Picks<span class="star" aria-hidden="true">✳</span></h2>
+        <h2 id="picks" class="text-2xl sm:text-4xl">Die Abkürzung: MJM Picks<Zeichen class="star star-anhang" /></h2>
         <a href={href('/empfehlungen')} class="whitespace-nowrap text-sm text-accent-soft hover:underline">Alle Picks →</a>
       </div>
       <p class="io mb-8 max-w-xl text-muted">
@@ -82,6 +83,6 @@ const marqueeItems = ['Alle Infos an einem Ort', 'Klick dich durchs Setup', 'Ehr
   )}
 
   <p class="io mt-6 max-w-xl pb-4 text-xs text-faint sm:text-sm">
-    <span class="star" aria-hidden="true">✳</span> Das Sternchen steht für Transparenz:&nbsp;{DISCLOSURE}
+    <Zeichen class="star star-vorn" />Das Zeichen steht für Transparenz:&nbsp;{DISCLOSURE}
   </p>
 </Base>

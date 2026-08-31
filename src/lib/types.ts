@@ -36,6 +36,10 @@ export interface AffiliateProduct {
   imageSource: 'press' | 'own' | 'none' | 'api';
   categories: Category[];
   editorial: EditorialContent;
+  /** Herkunft des technischen Datenblatts */
+  specsSourceUrl: string | null;
+  specsSourceName: string | null;
+  specsCheckedAt: string | null;
 }
 
 export interface AffiliateOffer {
@@ -89,4 +93,22 @@ export interface PicksScore {
   rankingGroup: string | null;
   rankingPosition: number | null;
   rankingTotal: number | null;
+}
+
+/** Ein Feld im technischen Datenblatt — Beschriftung, Einheit, Laienhinweis. */
+export interface SpecField {
+  key: string;
+  label: string;
+  unit: string | null;
+  hint: string | null;
+  sortOrder: number;
+}
+
+/** Ein einzelner Messwert am Produkt. */
+export interface ProductSpec {
+  productId: string;
+  key: string;
+  value: string;
+  sourceUrl: string | null;
+  sourceName: string | null;
 }

@@ -1,0 +1,73 @@
+---
+// Technische Daten als Definitionsliste. Felder ohne Wert fallen weg,
+// die Reihenfolge kommt aus spec_fields.sort_order.
+// Die Quellen stehen gesammelt unter der Tabelle statt an jeder Zeile —
+// bei fuenfzehn Werten aus zwei Quellen ist das ruhiger und genauso belegt.
+import type { ProductSpec, SpecField } from '../lib/types';
+
+interface Props {
+  specs: ProductSpec[];
+  fields: SpecField[];
+  checkedAt?: string | null;
+}
+const { specs, fields, checkedAt } = Astro.props;
+
+const nachKey = new Map(specs.map((s) => [s.key, s]));
+const zeilen = fields
+  .filter((f) => nachKey.has(f.key))
+  .map((f) => ({ feld: f, wert: nachKey.get(f.key)! }));
+
+// Jede Quelle einmal, in der Reihenfolge ihres ersten Auftretens
+const quellen: { name: string; url: string | null }[] = [];
+for (const { wert } of zeilen) {
+  if (!wert.sourceName) continue;
+  if (quellen.some((q) => q.name === wert.sourceName)) continue;
+  quellen.push({ name: wert.sourceName, url: wert.sourceUrl });
+}
+
+const datum = checkedAt
+  ? new Date(checkedAt).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' })
+  : null;
+---
+
+{zeilen.length > 0 && (
+  <section aria-labelledby="datenblatt" class="mt-10">
+    <h2 id="datenblatt" class="mb-4 text-xl sm:text-2xl">Technische Daten</h2>
+
+    <dl class="datenblatt overflow-hidden rounded-2xl border border-line bg-card">
+      {zeilen.map(({ feld, wert }) => (
+        <div class="db-zeile">
+          <dt>
+            {feld.label}
+            {feld.hint && (
+              <span class="db-hilfe" tabindex="0" role="note" aria-label={`Erklärung: ${feld.hint}`}>
+                <span aria-hidden="true">?</span>
+                <span class="db-blase">{feld.hint}</span>
+              </span>
+            )}
+          </dt>
+          <dd>
+            {wert.value}{feld.unit && <span class="db-einheit">&nbsp;{feld.unit}</span>}
+          </dd>
+        </div>
+      ))}
+    </dl>
+
+    {quellen.length > 0 && (
+      <p class="mt-3 text-xs text-faint">
+        Herstellerangaben von{' '}
+        {quellen.map((q, i) => (
+          <>
+            {i > 0 && (i === quellen.length - 1 ? ' und ' : ', ')}
+            {q.url ? (
+              <a class="underline underline-offset-2 hover:text-muted" href={q.url} rel="noopener noreferrer" target="_blank">{q.name}</a>
+            ) : (
+              q.name
+            )}
+          </>
+        ))}
+        {datum && <>, geprüft {datum}</>}.
+      </p>
+    )}
+  </section>
+)}

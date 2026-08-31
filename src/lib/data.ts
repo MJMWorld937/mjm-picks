@@ -61,6 +61,9 @@ export function getPublishedProducts(): Promise<AffiliateProduct[]> {
         .filter(Boolean)
         .sort((a: Category, b: Category) => a.sort_order - b.sort_order),
       editorial: { ...emptyEditorial, ...(row.product_editorial ?? {}) },
+      specsSourceUrl: row.specs_source_url ?? null,
+      specsSourceName: row.specs_source_name ?? null,
+      specsCheckedAt: row.specs_checked_at ?? null,
     }));
   })();
   return productsCache;
@@ -162,4 +165,44 @@ export function getPicksScores(): Promise<PicksScore[]> {
     }));
   })();
   return scoresCache;
+}
+
+// ---------- Technische Datenblätter ----------
+import type { ProductSpec, SpecField } from './types';
+
+let specFieldsCache: Promise<SpecField[]> | null = null;
+export function getSpecFields(): Promise<SpecField[]> {
+  specFieldsCache ??= (async () => {
+    const { data, error } = await supabase
+      .from('spec_fields')
+      .select('key, label, unit, hint, sort_order')
+      .order('sort_order');
+    if (error) throw new Error(`spec_fields: ${error.message}`);
+    return (data ?? []).map((r: any): SpecField => ({
+      key: r.key,
+      label: r.label,
+      unit: r.unit,
+      hint: r.hint,
+      sortOrder: r.sort_order,
+    }));
+  })();
+  return specFieldsCache;
+}
+
+let specsCache: Promise<ProductSpec[]> | null = null;
+export function getProductSpecs(): Promise<ProductSpec[]> {
+  specsCache ??= (async () => {
+    const { data, error } = await supabase
+      .from('product_specs')
+      .select('product_id, key, value, source_url, source_name');
+    if (error) throw new Error(`product_specs: ${error.message}`);
+    return (data ?? []).map((r: any): ProductSpec => ({
+      productId: r.product_id,
+      key: r.key,
+      value: r.value,
+      sourceUrl: r.source_url,
+      sourceName: r.source_name,
+    }));
+  })();
+  return specsCache;
 }

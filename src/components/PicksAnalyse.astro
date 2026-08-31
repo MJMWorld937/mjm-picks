@@ -1,4 +1,5 @@
 ---
+import Zeichen from './Zeichen.astro';
 import type { CommunityPattern, PicksScore, ProductConflict, SourceItemPublic } from '../lib/types';
 import { href } from '../lib/site';
 
@@ -36,7 +37,7 @@ const bars: { label: string; key: 'p' | 'i' | 'c' | 'k' | 's'; desc: string }[] 
   <section aria-labelledby="picks-analyse" class="mt-10 rounded-2xl border border-line bg-coal p-6">
     <div class="mb-1 flex flex-wrap items-baseline justify-between gap-2">
       <h2 id="picks-analyse" class="text-xl">
-        PICKS-Analyse<span class="star" aria-hidden="true">✳</span>
+        PICKS-Analyse<Zeichen class="star star-anhang" />
       </h2>
       <a href={href('/methodik')} class="meta hover:text-paper">Wie wir bewerten →</a>
     </div>
@@ -83,7 +84,7 @@ const bars: { label: string; key: 'p' | 'i' | 'c' | 'k' | 's'; desc: string }[] 
             <h3 class="meta mb-2 text-paper!">Community: wiederholt gelobt</h3>
             <ul class="space-y-1.5 text-sm">
               {pros.map((p) => (
-                <li class="flex gap-2"><span class="star shrink-0" aria-hidden="true">✳</span><span>{p.summary}</span></li>
+                <li class="flex gap-2"><Zeichen class="star shrink-0" /><span>{p.summary}</span></li>
               ))}
             </ul>
           </div>

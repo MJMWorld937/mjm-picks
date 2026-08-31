@@ -1,4 +1,5 @@
 ---
+import Zeichen from './Zeichen.astro';
 import { BRAND, DISCLOSURE, href } from '../lib/site';
 const year = new Date().getFullYear();
 ---
@@ -6,7 +7,7 @@ const year = new Date().getFullYear();
 <footer class="mt-24 border-t border-line">
   <div class="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
     <p class="max-w-2xl text-sm text-muted">
-      <span class="star" aria-hidden="true">✳</span>
+      <Zeichen class="star star-vorn" />
       {DISCLOSURE} Links zu Amazon sind bezahlte Links — für dich ändert sich am Preis nichts.
       Mehr dazu im <a class="underline underline-offset-2 hover:text-paper" href={href('/affiliate-hinweis')}>Affiliate-Hinweis</a>.
     </p>

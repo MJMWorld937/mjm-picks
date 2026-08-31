@@ -1,4 +1,5 @@
 ---
+import Zeichen from '../components/Zeichen.astro';
 import Base from '../layouts/Base.astro';
 import { BRAND } from '../lib/site';
 ---
@@ -9,7 +10,7 @@ import { BRAND } from '../lib/site';
 >
   <section class="py-12 sm:py-16">
     <p class="meta eyebrow">Methodik · Version 1.0</p>
-    <h1 class="mt-4 text-3xl sm:text-5xl">Wie wir bewerten<span class="star" aria-hidden="true">✳</span></h1>
+    <h1 class="mt-4 text-3xl sm:text-5xl">Wie wir bewerten<Zeichen class="star star-anhang" /></h1>
     <div class="prose-mjm mt-8">
       <p class="text-lg">
         Damit du nicht zehn Tests lesen musst: Wir werten unabhängige Quellen strukturiert aus

@@ -1,4 +1,5 @@
 ---
+import Zeichen from '../components/Zeichen.astro';
 import Base from '../layouts/Base.astro';
 import { BRAND, href } from '../lib/site';
 ---
@@ -8,7 +9,7 @@ import { BRAND, href } from '../lib/site';
   description="Wer hier kuratiert, nach welchen Kriterien ausgewählt wird — und was MJM Picks bewusst nicht macht."
 >
   <section class="py-12 sm:py-16">
-    <h1 class="text-3xl sm:text-5xl">Über {BRAND}<span class="star" aria-hidden="true">✳</span></h1>
+    <h1 class="text-3xl sm:text-5xl">Über {BRAND}<Zeichen class="star star-anhang" /></h1>
     <div class="prose-mjm mt-8">
       <p>
         {BRAND} ist ein kuratiertes Empfehlungsportal für Technik — betrieben von einer Person,

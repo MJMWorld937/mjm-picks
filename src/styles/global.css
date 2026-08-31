@@ -1,5 +1,5 @@
 /* MJM Picks — Designsystem v2 (animiert)
-   Warmes Graphit, Papierton, Flieder-Akzent. Signatur: das ✳ (Offenlegung als Marke). */
+   Warmes Graphit, Papierton, Flieder-Akzent. Signatur: der Haken im Sechseck (Offenlegung als Marke). */
 
 @import '@fontsource/space-grotesk/500.css';
 @import '@fontsource/space-grotesk/700.css';
@@ -77,14 +77,31 @@
   }
 }
 
-/* ---------- Marken-Sternchen ---------- */
+/* ---------- Markenzeichen ---------- */
+.zeichen {
+  width: 0.86em;
+  height: 0.86em;
+  display: inline-block;
+  vertical-align: -0.08em;
+  flex-shrink: 0;
+}
 .star {
   color: var(--color-accent);
   font-style: normal;
   display: inline-block;
 }
-.star-spin { animation: starSpin 14s linear infinite; transform-origin: 50% 52%; }
-@keyframes starSpin { to { transform: rotate(360deg); } }
+/* Grenzt das Zeichen direkt an Text, braucht es etwas Luft. */
+.star-anhang { margin-left: 0.22em; }
+.star-vorn { margin-right: 0.4em; }
+/* Ein Siegel dreht sich nicht — es wird aufgesetzt. */
+.zeichen-stempel {
+  animation: zeichenStempel 0.7s cubic-bezier(0.2, 0.9, 0.25, 1.1) backwards;
+  animation-delay: var(--d, 0ms);
+}
+@keyframes zeichenStempel {
+  from { opacity: 0; transform: scale(2.1); }
+  to { opacity: 1; transform: scale(1); }
+}
 
 /* ---------- Meta-Label ---------- */
 .meta {
@@ -613,10 +630,95 @@ dialog.drawer[open] .drawer-item {
   text-underline-offset: 3px;
 }
 
+/* ---------- Technisches Datenblatt ---------- */
+.datenblatt { font-size: 0.9rem; }
+.db-zeile {
+  display: grid;
+  grid-template-columns: minmax(9rem, 13rem) 1fr;
+  gap: 1rem;
+  padding: 0.7rem 1.1rem;
+  align-items: baseline;
+}
+.db-zeile + .db-zeile { border-top: 1px solid var(--color-line); }
+.db-zeile:nth-child(odd) { background: rgb(255 255 255 / 0.015); }
+.db-zeile dt {
+  color: var(--color-muted);
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+.db-zeile dd {
+  margin: 0;
+  color: var(--color-paper);
+  font-variant-numeric: tabular-nums;
+}
+.db-einheit { color: var(--color-muted); }
+.db-quelle {
+  display: block;
+  margin-top: 0.15rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.05em;
+  color: var(--color-faint);
+  text-decoration: none;
+}
+.db-quelle:hover { color: var(--color-accent-soft); text-decoration: underline; }
+
+/* Fragezeichen mit Erklaerung — auf Touch per Tap (focus), sonst per Hover */
+.db-hilfe {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 9999px;
+  border: 1px solid var(--color-line);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--color-faint);
+  cursor: help;
+}
+.db-hilfe:hover, .db-hilfe:focus-visible { color: var(--color-accent-soft); border-color: var(--color-accent); }
+.db-blase {
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  left: 50%;
+  translate: -50% 0;
+  z-index: 20;
+  width: max-content;
+  max-width: min(20rem, 70vw);
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.6rem;
+  border: 1px solid var(--color-line);
+  background: var(--color-coal);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.5);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  letter-spacing: normal;
+  color: var(--color-paper);
+  text-align: left;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 160ms ease, visibility 160ms;
+}
+.db-hilfe:hover .db-blase, .db-hilfe:focus .db-blase, .db-hilfe:focus-within .db-blase {
+  opacity: 1;
+  visibility: visible;
+}
+@media (max-width: 30rem) {
+  .db-zeile { grid-template-columns: 1fr; gap: 0.15rem; }
+  .db-zeile dt { font-size: 0.78rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .db-blase { transition: none; }
+}
+
 /* ---------- Reduced Motion: alles Ambient aus ---------- */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .hero-art img, .hero-orb, .marquee-track, .star-spin, .ring-anim { animation: none; }
+  .hero-art img, .hero-orb, .marquee-track, .zeichen-stempel, .ring-anim { animation: none; }
   .hw { animation: none; opacity: 1; transform: none; }
   .js .io { opacity: 1; transform: none; transition: none; }
   .tilt, .artwork > img, .btn-cta { transition: none; }

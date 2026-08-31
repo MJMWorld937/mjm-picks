@@ -1,0 +1,31 @@
+---
+// Das Markenzeichen: Haken im Sechseck — geprüfte Technik.
+// Erbt die Textfarbe über currentColor und skaliert mit der Schriftgröße.
+interface Props {
+  class?: string;
+  label?: string;
+}
+const { class: className, label } = Astro.props;
+---
+<svg
+  class:list={['zeichen', className]}
+  viewBox="0 0 32 32"
+  fill="none"
+  role={label ? 'img' : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : 'true'}
+>
+  <path
+    d="M16 3 L27 9.5 V22.5 L16 29 L5 22.5 V9.5 Z"
+    stroke="currentColor"
+    stroke-width="2.4"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M11.5 16.5 L14.8 20 L21 12.5"
+    stroke="currentColor"
+    stroke-width="2.6"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

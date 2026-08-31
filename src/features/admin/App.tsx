@@ -3,6 +3,23 @@ import type { Session } from '@supabase/supabase-js';
 import { supabase } from './supabaseClient';
 import { parseAsin } from '../../lib/asin';
 
+// Markenzeichen: Haken im Sechseck. Erbt die Textfarbe.
+function Zeichen({ className, title }: { className?: string; title?: string }) {
+  return (
+    <svg
+      className={['zeichen', className].filter(Boolean).join(' ')}
+      viewBox="0 0 32 32"
+      fill="none"
+      role={title ? 'img' : undefined}
+      aria-label={title}
+      aria-hidden={title ? undefined : true}
+    >
+      <path d="M16 3 L27 9.5 V22.5 L16 29 L5 22.5 V9.5 Z" stroke="currentColor" strokeWidth="2.4" strokeLinejoin="round" />
+      <path d="M11.5 16.5 L14.8 20 L21 12.5" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 // ---------- Typen (Admin arbeitet direkt auf DB-Zeilen) ----------
 interface CategoryRow {
   id: string;
@@ -103,7 +120,7 @@ function Login() {
   return (
     <form onSubmit={submit} className="mx-auto mt-24 w-full max-w-sm space-y-4">
       <h1 className="font-display text-2xl font-bold">
-        Admin<span className="star">✳</span>
+        Admin<Zeichen className="star star-anhang" />
       </h1>
       <Field label="E-Mail">
         <input className={inputCls} type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required />
@@ -492,7 +509,7 @@ export default function App() {
     <div className="mx-auto w-full max-w-4xl px-4 py-10">
       <header className="mb-8 flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-display text-2xl font-bold">
-          MJM Picks<span className="star">✳</span> <span className="text-muted">Admin</span>
+          MJM Picks<Zeichen className="star star-anhang" /> <span className="text-muted">Admin</span>
         </h1>
         <div className="flex flex-wrap items-center gap-2">
           <a className={btnGhost} href="https://github.com/MJMWorld937/mjm-picks/actions" target="_blank" rel="noopener noreferrer">Actions ↗</a>
@@ -513,7 +530,7 @@ export default function App() {
               <li key={p.id} className="flex items-center gap-3 px-4 py-3">
                 <span className="meta w-14 shrink-0">№{String(p.pick_no).padStart(2, '0')}</span>
                 <span className="grow truncate">{p.title || <em className="text-faint">ohne Titel</em>}</span>
-                {p.featured && <span className="star" title="Top-Pick">✳</span>}
+                {p.featured && <Zeichen className="star" title="Top-Pick" />}
                 <span
                   className={
                     'meta shrink-0 rounded-full border px-2 py-0.5 ' +

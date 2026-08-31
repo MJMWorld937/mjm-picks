@@ -23,7 +23,7 @@ const ogImageUrl = new URL(ogImage.src, Astro.site);
 const canonical = new URL(Astro.url.pathname, Astro.site);
 // Staging (github.io) nie indexieren — verhindert Duplicate Content vor dem Domain-Umzug
 const isStaging = Astro.site?.hostname.endsWith('github.io') ?? false;
-const fullTitle = title === BRAND ? `${BRAND} ✳ Handverlesene Tech-Empfehlungen` : `${title} · ${BRAND}`;
+const fullTitle = title === BRAND ? `${BRAND} · Handverlesene Tech-Empfehlungen` : `${title} · ${BRAND}`;
 
 const baseJsonLd = {
   '@context': 'https://schema.org',
