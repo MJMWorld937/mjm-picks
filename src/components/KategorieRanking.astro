@@ -101,6 +101,40 @@ const fmt = (total: number) => (total / 10).toFixed(1).replace('.', ',');
     background: var(--coal);
     padding: 1.25rem;
   }
+  /* Ab Tablet steht die Liste fest neben den Karten. Wird sie länger als der
+     Bildschirm — bei zwanzig Prozessoren in vier Klassen schnell der Fall —,
+     scrollt sie für sich, statt unten abgeschnitten zu sein. */
+  @media (min-width: 64rem) {
+    .rank {
+      max-height: calc(100svh - 8rem);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: var(--line) transparent;
+    }
+    .rank::-webkit-scrollbar {
+      width: 8px;
+    }
+    .rank::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .rank::-webkit-scrollbar-thumb {
+      background: var(--line);
+      border-radius: 9999px;
+    }
+    .rank::-webkit-scrollbar-thumb:hover {
+      background: #3b332b;
+    }
+    /* Die Überschrift der Klasse bleibt stehen, solange man in ihr scrollt. */
+    .gruppe {
+      position: sticky;
+      top: -1.25rem;
+      z-index: 1;
+      padding-block: 0.35rem;
+      margin-block: -0.35rem 0.15rem;
+      background: var(--coal);
+    }
+  }
   .block + .block {
     margin-top: 1.4rem;
   }
