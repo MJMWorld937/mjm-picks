@@ -130,7 +130,16 @@ const breadcrumbLd = {
         )}
       </div>
       {product.imageUrl && product.imageSource === 'press' && (
-        <p class="mt-2 text-xs text-faint">Produktbild: Hersteller</p>
+        <p class="mt-2 text-xs text-faint">
+          {product.imageSourceUrl ? (
+            <a class="underline underline-offset-2 hover:text-muted" href={product.imageSourceUrl}
+               rel="noopener noreferrer" target="_blank">
+              {product.imageLicense ?? 'Produktbild: Hersteller'}
+            </a>
+          ) : (
+            product.imageLicense ?? 'Produktbild: Hersteller'
+          )}
+        </p>
       )}
 
       <div class="prose-mjm mt-10">

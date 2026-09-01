@@ -34,6 +34,10 @@ export interface AffiliateProduct {
   source: 'manual' | 'api';
   imageUrl: string | null;
   imageSource: 'press' | 'own' | 'none' | 'api';
+  /** Nachweistext zum Bild — Hersteller oder, bei freien Lizenzen, Urheber und Lizenz */
+  imageLicense: string | null;
+  /** Seite, von der das Bild stammt; bei freien Lizenzen die Beschreibungsseite */
+  imageSourceUrl: string | null;
   categories: Category[];
   editorial: EditorialContent;
   /** Einsatzklasse innerhalb des Unterbereichs, z. B. WQHD */

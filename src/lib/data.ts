@@ -56,6 +56,8 @@ export function getPublishedProducts(): Promise<AffiliateProduct[]> {
       source: row.source,
       imageUrl: row.image_url,
       imageSource: row.image_source,
+      imageLicense: row.image_license ?? null,
+      imageSourceUrl: row.image_source_url ?? null,
       categories: (row.product_categories ?? [])
         .map((pc: any) => pc.categories)
         .filter(Boolean)
