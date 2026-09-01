@@ -32,7 +32,12 @@ const bezeichnungVon = (p: AffiliateProduct) => {
   );
   return treffer ? treffer[0].trim() : null;
 };
-const klasse = geschwister.filter((p) => p.rankingGroup === product.rankingGroup);
+// Wie viele verschiedene Kartenmodelle hat die eigene Klasse? Steht dort nur eines,
+// wäre ein Klassenvergleich sinnlos — dann zeigen wir die Einordnung im ganzen Bereich.
+const eigeneKlasse = geschwister.filter((p) => p.rankingGroup === product.rankingGroup);
+const modelleDerKlasse = new Set(eigeneKlasse.map((p) => bezeichnungVon(p) ?? p.id));
+const klassenvergleich = modelleDerKlasse.size >= 2;
+const klasse = klassenvergleich ? eigeneKlasse : geschwister;
 
 const bloecke = series
   .map((reihe) => {
@@ -76,8 +81,8 @@ const bloecke = series
     const spanne = Math.max(...feld.map((f) => f.wert), 0);
     return { reihe, feld, spanne };
   })
-  // Unter drei Modellen ist es kein Vergleich, und das eigene Produkt muss dabei sein.
-  .filter((b) => b.feld.length >= 3 && b.feld.some((f) => f.eigen));
+  // Unter zwei Modellen ist es kein Vergleich, und das eigene Produkt muss dabei sein.
+  .filter((b) => b.feld.length >= 2 && b.feld.some((f) => f.eigen));
 
 const datum = (iso: string | null) =>
   iso ? new Date(iso).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }) : null;
@@ -88,9 +93,17 @@ const datum = (iso: string | null) =>
     <h2 id="benchmark" class="mb-1 text-xl sm:text-2xl">Im Vergleich</h2>
     <p class="mb-5 text-xs leading-relaxed text-faint">
       Gemessen haben andere — wir stellen die Zahlen nebeneinander. Jede Reihe stammt aus
-      einem einzigen Testlauf, damit die Werte untereinander gelten. Verglichen werden die
-      Kartenmodelle der Klasse {product.rankingGroup}. Varianten desselben Modells liegen
-      messtechnisch gleichauf und stehen deshalb in einer Zeile.
+      einem einzigen Testlauf, damit die Werte untereinander gelten. Varianten desselben
+      Kartenmodells liegen messtechnisch gleichauf und stehen deshalb in einer Zeile.
+      {klassenvergleich ? (
+        <> Verglichen werden die Kartenmodelle der Klasse {product.rankingGroup}.</>
+      ) : (
+        <>
+          {' '}In der Klasse {product.rankingGroup} steht bislang nur dieses eine Modell —
+          deshalb zeigt der Vergleich hier den gesamten Bereich, damit die Einordnung
+          sichtbar wird.
+        </>
+      )}
     </p>
 
     <div class="flex flex-col gap-7">
