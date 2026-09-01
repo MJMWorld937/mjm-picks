@@ -1,9 +1,7 @@
 ---
-import { getImage } from 'astro:assets';
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import { heroArt } from '../lib/art';
 import { BRAND } from '../lib/site';
 
 interface Props {
@@ -18,8 +16,13 @@ interface Props {
 }
 
 const { title, description, noindex = false, jsonLd = [], fullBleedTop = false } = Astro.props;
-const ogImage = await getImage({ src: heroArt, width: 1200, height: 630, fit: 'cover', format: 'jpeg', quality: 80 });
-const ogImageUrl = new URL(ogImage.src, Astro.site);
+// Teilbild fürs Web: feste Datei statt zugeschnittenem Hero-Motiv, damit beim Teilen
+// Markenzeichen und Name mitkommen. Die URL bleibt stabil — Discord, Slack und
+// Facebook merken sich das Bild pro URL und laden es sonst nicht neu.
+const ogImageUrl = new URL(
+  `${import.meta.env.BASE_URL.replace(/\/$/, '')}/og-mjm-picks.jpg`,
+  Astro.site
+);
 const canonical = new URL(Astro.url.pathname, Astro.site);
 // Staging (github.io) nie indexieren — verhindert Duplicate Content vor dem Domain-Umzug
 const isStaging = Astro.site?.hostname.endsWith('github.io') ?? false;
@@ -52,8 +55,10 @@ const baseJsonLd = {
     <meta property="og:site_name" content={BRAND} />
     <meta property="og:locale" content="de_DE" />
     <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${BRAND} — Handverlesene Tech-Empfehlungen`} />
     <meta name="twitter:card" content="summary_large_image" />
     <script type="application/ld+json" set:html={JSON.stringify(baseJsonLd)} />
     {jsonLd.map((obj) => <script type="application/ld+json" set:html={JSON.stringify(obj)} />)}
