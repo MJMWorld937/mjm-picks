@@ -1,0 +1,223 @@
+---
+// Filterleiste für einen Bereich. Steuert gleichzeitig die Produktkarten und die
+// Rangliste daneben — beide tragen dieselben data-f-*-Attribute.
+// Ohne JavaScript ist alles sichtbar; der Filter ist eine Zugabe, keine Voraussetzung.
+import type { FilterGroup } from '../lib/filter';
+
+interface Props {
+  gruppen: FilterGroup[];
+  /** Wie viele Produkte insgesamt im Bereich sind */
+  gesamt: number;
+}
+const { gruppen, gesamt } = Astro.props;
+---
+
+{gruppen.length > 0 && (
+  <section class="filter" data-filter aria-label="Auswahl eingrenzen">
+    <div class="filter-kopf">
+      <p class="meta">Auswahl eingrenzen</p>
+      <button type="button" class="filter-reset" data-filter-reset hidden>Alle anzeigen</button>
+    </div>
+
+    <div class="filter-gruppen">
+      {gruppen.map((gruppe) => (
+        <fieldset class="filter-gruppe">
+          <legend>{gruppe.label}</legend>
+          <div class="filter-chips">
+            {gruppe.options.map((option) => (
+              <label class="chip" title={option.hint}>
+                <input
+                  type="checkbox"
+                  name={gruppe.key}
+                  value={option.id}
+                  data-filter-eingabe
+                />
+                <span>{option.label}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      ))}
+    </div>
+
+    <p class="filter-stand" data-filter-stand aria-live="polite" hidden></p>
+    <p class="filter-leer" data-filter-leer hidden>
+      Zu dieser Auswahl passt kein Pick. Nimm einen Filter heraus.
+    </p>
+  </section>
+)}
+
+<script>
+  const wurzel = document.querySelector<HTMLElement>('[data-filter]');
+  if (wurzel) {
+    const eingaben = [...wurzel.querySelectorAll<HTMLInputElement>('[data-filter-eingabe]')];
+    const standAnzeige = wurzel.querySelector<HTMLElement>('[data-filter-stand]');
+    const leerHinweis = wurzel.querySelector<HTMLElement>('[data-filter-leer]');
+    const resetKnopf = wurzel.querySelector<HTMLButtonElement>('[data-filter-reset]');
+
+    // Beides wird gefiltert: die Karten und die Zeilen der Rangliste daneben.
+    const karten = [...document.querySelectorAll<HTMLElement>('[data-filterbar]')];
+    const rangZeilen = [...document.querySelectorAll<HTMLElement>('[data-rang-zeile]')];
+    const rangBloecke = [...document.querySelectorAll<HTMLElement>('[data-rang-block]')];
+    const gesamtZahl = karten.length;
+
+    /** Erfüllt ein Element alle gesetzten Filter? Innerhalb einer Gruppe gilt oder, zwischen den Gruppen und. */
+    const passt = (el: HTMLElement, auswahl: Map<string, Set<string>>) => {
+      for (const [key, werte] of auswahl) {
+        const eigene = (el.dataset[`f${key.charAt(0).toUpperCase()}${key.slice(1)}`] ?? '').split(' ');
+        if (![...werte].some((w) => eigene.includes(w))) return false;
+      }
+      return true;
+    };
+
+    const anwenden = () => {
+      const auswahl = new Map<string, Set<string>>();
+      for (const eingabe of eingaben) {
+        if (!eingabe.checked) continue;
+        if (!auswahl.has(eingabe.name)) auswahl.set(eingabe.name, new Set());
+        auswahl.get(eingabe.name)!.add(eingabe.value);
+      }
+      const aktiv = auswahl.size > 0;
+
+      let sichtbar = 0;
+      for (const karte of karten) {
+        const zeigen = !aktiv || passt(karte, auswahl);
+        karte.hidden = !zeigen;
+        if (zeigen) sichtbar++;
+      }
+
+      // Rangliste mitziehen und neu durchnummerieren, damit die Plätze zur Auswahl passen.
+      for (const zeile of rangZeilen) {
+        zeile.hidden = aktiv && !passt(zeile, auswahl);
+      }
+      for (const block of rangBloecke) {
+        const eigene = [...block.querySelectorAll<HTMLElement>('[data-rang-zeile]')];
+        const uebrig = eigene.filter((z) => !z.hidden);
+        block.hidden = uebrig.length === 0;
+        let nr = 0;
+        for (const zeile of uebrig) {
+          const pos = zeile.querySelector<HTMLElement>('[data-rang-pos]');
+          if (!pos) continue;
+          // Picks ohne Score behalten ihren Strich statt einer Nummer.
+          if (pos.dataset.ohneScore === 'true') continue;
+          nr++;
+          pos.textContent = String(nr);
+        }
+        const zaehler = block.querySelector<HTMLElement>('[data-rang-zahl]');
+        if (zaehler) zaehler.textContent = uebrig.length > 1 ? String(uebrig.length) : '';
+      }
+
+      if (standAnzeige) {
+        standAnzeige.hidden = !aktiv;
+        standAnzeige.textContent = aktiv ? `${sichtbar} von ${gesamtZahl} Picks` : '';
+      }
+      if (leerHinweis) leerHinweis.hidden = !(aktiv && sichtbar === 0);
+      if (resetKnopf) resetKnopf.hidden = !aktiv;
+    };
+
+    for (const eingabe of eingaben) eingabe.addEventListener('change', anwenden);
+    resetKnopf?.addEventListener('click', () => {
+      for (const eingabe of eingaben) eingabe.checked = false;
+      anwenden();
+    });
+  }
+</script>
+
+<style>
+  .filter {
+    border: 1px solid var(--color-line);
+    border-radius: 1rem;
+    background: var(--color-coal);
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 2rem;
+  }
+  .filter-kopf {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.9rem;
+  }
+  .filter-reset {
+    border: 0;
+    background: none;
+    padding: 0;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent-soft);
+    cursor: pointer;
+  }
+  .filter-reset:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .filter-gruppen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.4rem 2rem;
+  }
+  .filter-gruppe {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+  }
+  .filter-gruppe legend {
+    padding: 0;
+    margin-bottom: 0.45rem;
+    font-size: 0.72rem;
+    color: var(--color-faint);
+  }
+  .filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .chip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--color-line);
+    border-radius: 9999px;
+    padding: 0.32rem 0.8rem;
+    font-size: 0.82rem;
+    color: var(--color-muted);
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+  }
+  .chip:hover {
+    border-color: #3b332b;
+    color: var(--color-paper);
+  }
+  .chip input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .chip:has(input:checked) {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-ink);
+    font-weight: 500;
+  }
+  .chip:has(input:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  .filter-stand {
+    margin: 0.9rem 0 0;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    color: var(--color-faint);
+  }
+  .filter-leer {
+    margin: 0.6rem 0 0;
+    font-size: 0.85rem;
+    color: var(--color-muted);
+  }
+</style>

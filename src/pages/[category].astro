@@ -4,7 +4,9 @@ import Base from '../layouts/Base.astro';
 import ProductCard from '../components/ProductCard.astro';
 import CategoryTile from '../components/CategoryTile.astro';
 import KategorieRanking from '../components/KategorieRanking.astro';
-import { getCategories, getPicksScores, getPublishedProducts, getRankingGroups } from '../lib/data';
+import ProduktFilter from '../components/ProduktFilter.astro';
+import { getCategories, getPicksScores, getProductSpecs, getPublishedProducts, getRankingGroups } from '../lib/data';
+import { filterAttribute, filterGruppenFuer } from '../lib/filter';
 import { categoryArt } from '../lib/art';
 import { BRAND, href } from '../lib/site';
 import type { Category } from '../lib/types';
@@ -39,6 +41,14 @@ const countFor = (catId: string) =>
 // Unveröffentlichte Scores filtert bereits die RLS-Policy heraus (scores_read: published OR is_admin).
 const scores = await getPicksScores();
 const rankingGroups = await getRankingGroups();
+
+// Filter: Die Gruppen haengen am Bereich, die Zuordnung je Produkt an dessen Datenblatt.
+// Karten und Rangliste bekommen dieselben Attribute, damit ein Klick beide trifft.
+const filterGruppen = filterGruppenFuer(category.slug);
+const allSpecs = filterGruppen.length > 0 ? await getProductSpecs() : [];
+const filterAttrs = new Map(
+  products.map((p) => [p.id, filterAttribute(p, allSpecs, filterGruppen)])
+);
 
 const crumbs = [
   { name: BRAND, path: '/' },
@@ -107,11 +117,14 @@ const breadcrumbLd = {
       // Nur Unterbereiche bekommen die Rangliste: Dort sind die Picks vergleichbar.
       // In den Oberbereichen staenden Maeuse gegen Monitore — das sagt nichts aus.
       <div class="grid gap-8 pb-8 lg:grid-cols-[1fr_18rem] lg:items-start">
-        <div class="grid gap-5 sm:grid-cols-2">
-          {products.map((p, i) => <ProductCard product={p} index={i} />)}
+        <div>
+          <ProduktFilter gruppen={filterGruppen} gesamt={products.length} />
+          <div class="grid gap-5 sm:grid-cols-2">
+            {products.map((p, i) => <ProductCard product={p} index={i} filter={filterAttrs.get(p.id)} />)}
+          </div>
         </div>
         <div class="lg:sticky lg:top-24">
-          <KategorieRanking products={products} scores={scores} groups={rankingGroups} categoryName={category.name} />
+          <KategorieRanking products={products} scores={scores} groups={rankingGroups} categoryName={category.name} filterAttrs={filterAttrs} />
         </div>
       </div>
     ) : (

@@ -9,9 +9,11 @@ interface Props {
   product: AffiliateProduct;
   /** Index für gestaffelte Einblendung */
   index?: number;
+  /** data-f-*-Attribute für den Bereichsfilter */
+  filter?: Record<string, string>;
 }
 
-const { product, index = 0 } = Astro.props;
+const { product, index = 0, filter = {} } = Astro.props;
 const cat = product.categories[0];
 const hue = cat?.hue ?? 'violet';
 const art = categoryArt(cat?.slug);
@@ -19,7 +21,7 @@ const pickNo = String(product.pickNo).padStart(2, '0');
 const topPros = product.editorial.pros.slice(0, 3);
 ---
 
-<article class="io" style={`--d: ${Math.min(index, 6) * 90}ms`}>
+<article class="io" style={`--d: ${Math.min(index, 6) * 90}ms`} data-filterbar {...filter}>
   <a
     href={href(`/produkt/${product.slug}`)}
     class={`tilt hue-${hue} group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-card no-underline`}

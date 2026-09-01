@@ -7,10 +7,12 @@ interface Props {
   scores: PicksScore[];
   groups: RankingGroup[];
   categoryName: string;
+  /** data-f-*-Attribute je Produkt-Id, damit die Liste mitgefiltert wird */
+  filterAttrs?: Map<string, Record<string, string>>;
   /** Slug des Produkts, das gerade angezeigt wird — wird in der Liste hervorgehoben. */
   activeSlug?: string;
 }
-const { products, scores, groups, categoryName, activeSlug } = Astro.props;
+const { products, scores, groups, categoryName, activeSlug, filterAttrs } = Astro.props;
 
 // Nur veröffentlichte Scores fließen ins Ranking; Picks ohne Score hängen wir
 // unsortiert hinten an, statt sie zu verschweigen.
@@ -56,23 +58,23 @@ const fmt = (total: number) => (total / 10).toFixed(1).replace('.', ',');
     <p class="mb-4 text-xs leading-relaxed text-faint">Nach Einsatzklasse getrennt — verglichen wird nur, was denselben Zweck hat.</p>
 
     {bloecke.map((block) => (
-      <section class="block">
+      <section class="block" data-rang-block>
         <h3 class="gruppe">
           {block.name}
-          {block.eintraege.length > 1 && <span class="zahl">{block.eintraege.length}</span>}
+          <span class="zahl" data-rang-zahl>{block.eintraege.length > 1 ? block.eintraege.length : ''}</span>
         </h3>
         {block.beschreibung && <p class="erklaerung">{block.beschreibung}</p>}
         <ol class="space-y-1">
           {block.eintraege.map((entry, i) => {
             const isActive = activeSlug && entry.product.slug === activeSlug;
             return (
-              <li>
+              <li data-rang-zeile {...(filterAttrs?.get(entry.product.id) ?? {})}>
                 <a
                   href={href(`/produkt/${entry.product.slug}`)}
                   class:list={['row', { active: isActive }]}
                   aria-current={isActive ? 'page' : undefined}
                 >
-                  <span class="pos" aria-hidden="true">{entry.score ? i + 1 : '–'}</span>
+                  <span class="pos" aria-hidden="true" data-rang-pos data-ohne-score={entry.score ? undefined : 'true'}>{entry.score ? i + 1 : '–'}</span>
                   <span class="name">{entry.product.title}</span>
                   {entry.score ? (
                     <span class="val">{fmt(entry.score.total)}</span>
