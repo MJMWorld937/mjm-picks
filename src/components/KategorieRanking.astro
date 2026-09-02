@@ -98,9 +98,9 @@ const fmt = (total: number) => (total / 10).toFixed(1).replace('.', ',');
 
 <style>
   .rank {
-    border: 1px solid var(--line);
+    border: 1px solid var(--color-line);
     border-radius: 1rem;
-    background: var(--coal);
+    background: var(--color-coal);
     padding: 1.25rem;
   }
   /* Ab Tablet steht die Liste fest neben den Karten. Wird sie länger als der
@@ -112,7 +112,7 @@ const fmt = (total: number) => (total / 10).toFixed(1).replace('.', ',');
       overflow-y: auto;
       overscroll-behavior: contain;
       scrollbar-width: thin;
-      scrollbar-color: var(--line) transparent;
+      scrollbar-color: var(--color-line) transparent;
     }
     .rank::-webkit-scrollbar {
       width: 8px;
@@ -121,7 +121,7 @@ const fmt = (total: number) => (total / 10).toFixed(1).replace('.', ',');
       background: transparent;
     }
     .rank::-webkit-scrollbar-thumb {
-      background: var(--line);
+      background: var(--color-line);
       border-radius: 9999px;
     }
     .rank::-webkit-scrollbar-thumb:hover {
@@ -134,7 +134,7 @@ const fmt = (total: number) => (total / 10).toFixed(1).replace('.', ',');
       z-index: 1;
       padding-block: 0.35rem;
       margin-block: -0.35rem 0.15rem;
-      background: var(--coal);
+      background: var(--color-coal);
     }
   }
   .block + .block {
@@ -148,19 +148,19 @@ const fmt = (total: number) => (total / 10).toFixed(1).replace('.', ',');
     font-family: var(--font-display, sans-serif);
     font-size: 0.95rem;
     font-weight: 500;
-    color: var(--paper);
+    color: var(--color-paper);
     margin: 0 0 0.15rem;
   }
   .zahl {
     font-family: var(--font-mono, ui-monospace, monospace);
     font-size: 0.7rem;
-    color: var(--faint);
+    color: var(--color-faint);
   }
   .erklaerung {
     margin: 0 0 0.5rem;
     font-size: 0.72rem;
     line-height: 1.4;
-    color: var(--faint);
+    color: var(--color-faint);
   }
   .row {
     position: relative;
@@ -188,36 +188,36 @@ const fmt = (total: number) => (total / 10).toFixed(1).replace('.', ',');
     height: 0;
     transform: translateY(-50%);
     border-radius: 2px;
-    background: var(--accent);
+    background: var(--color-accent);
     transition: height 0.28s ease, box-shadow 0.28s ease;
   }
 
   .row:hover,
   .row:focus-visible {
-    background: color-mix(in oklab, var(--accent) 11%, transparent);
+    background: color-mix(in oklab, var(--color-accent) 11%, transparent);
     box-shadow:
-      inset 0 0 0 1px color-mix(in oklab, var(--accent) 26%, transparent),
-      0 0 20px -8px color-mix(in oklab, var(--accent) 60%, transparent);
+      inset 0 0 0 1px color-mix(in oklab, var(--color-accent) 26%, transparent),
+      0 0 20px -8px color-mix(in oklab, var(--color-accent) 60%, transparent);
   }
   .row:hover::before,
   .row:focus-visible::before {
     height: 66%;
-    box-shadow: 0 0 8px color-mix(in oklab, var(--accent) 80%, transparent);
+    box-shadow: 0 0 8px color-mix(in oklab, var(--color-accent) 80%, transparent);
   }
   /* Rang und Wertung ziehen mit: die Zahl bekommt den Schein. */
   .row:hover .pos,
   .row:focus-visible .pos {
-    color: var(--accent-soft);
+    color: var(--color-accent-soft);
   }
   .row:hover .val,
   .row:focus-visible .val {
-    color: var(--paper);
-    text-shadow: 0 0 10px color-mix(in oklab, var(--accent) 70%, transparent);
+    color: var(--color-paper);
+    text-shadow: 0 0 10px color-mix(in oklab, var(--color-accent) 70%, transparent);
   }
 
   /* Die Karte, auf deren Seite man gerade ist, bleibt dauerhaft markiert. */
   .row.active {
-    background: color-mix(in oklab, var(--accent) 16%, transparent);
+    background: color-mix(in oklab, var(--color-accent) 16%, transparent);
   }
   .row.active::before {
     height: 66%;
@@ -241,11 +241,11 @@ const fmt = (total: number) => (total / 10).toFixed(1).replace('.', ',');
   .pos {
     font-family: var(--font-mono, ui-monospace, monospace);
     font-size: 0.78rem;
-    color: var(--muted);
+    color: var(--color-muted);
     text-align: right;
   }
   .row.active .pos {
-    color: var(--accent-soft);
+    color: var(--color-accent-soft);
   }
   .name {
     font-size: 0.9rem;
@@ -256,10 +256,10 @@ const fmt = (total: number) => (total / 10).toFixed(1).replace('.', ',');
   .val {
     font-family: var(--font-mono, ui-monospace, monospace);
     font-size: 0.85rem;
-    color: var(--accent-soft);
+    color: var(--color-accent-soft);
     font-variant-numeric: tabular-nums;
   }
   .val-none {
-    color: var(--muted);
+    color: var(--color-muted);
   }
 </style>
