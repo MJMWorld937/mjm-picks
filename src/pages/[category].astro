@@ -72,6 +72,7 @@ const breadcrumbLd = {
   description={`${category.name} auf ${BRAND}: ${category.description}`}
   jsonLd={[breadcrumbLd]}
   noindex={products.length === 0}
+  weit
 >
   <nav aria-label="Brotkrumen" class="pt-8 text-sm text-muted">
     <a href={href('/')} class="hover:text-paper">Start</a>
@@ -106,7 +107,7 @@ const breadcrumbLd = {
   {children.length > 0 && (
     <section aria-label="Unterbereiche" class="mb-12">
       <p class="meta mb-4">Unterbereiche</p>
-      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
         {children.map((c, i) => <CategoryTile category={c} count={countFor(c.id)} index={i} />)}
       </div>
     </section>
@@ -116,10 +117,10 @@ const breadcrumbLd = {
     parent ? (
       // Nur Unterbereiche bekommen die Rangliste: Dort sind die Picks vergleichbar.
       // In den Oberbereichen staenden Maeuse gegen Monitore — das sagt nichts aus.
-      <div class="grid gap-8 pb-8 lg:grid-cols-[1fr_18rem] lg:items-start">
+      <div class="grid gap-8 pb-8 lg:grid-cols-[1fr_18rem] 2xl:grid-cols-[1fr_22rem] lg:items-start">
         <div>
           <ProduktFilter gruppen={filterGruppen} gesamt={products.length} />
-          <div class="grid gap-5 sm:grid-cols-2">
+          <div class="grid gap-5 sm:grid-cols-2 2xl:grid-cols-3">
             {products.map((p, i) => <ProductCard product={p} index={i} filter={filterAttrs.get(p.id)} />)}
           </div>
         </div>
@@ -128,7 +129,7 @@ const breadcrumbLd = {
         </div>
       </div>
     ) : (
-      <div class="grid gap-5 pb-8 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="grid gap-5 pb-8 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
         {products.map((p, i) => <ProductCard product={p} index={i} />)}
       </div>
     )

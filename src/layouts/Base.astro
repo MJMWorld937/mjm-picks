@@ -13,9 +13,17 @@ interface Props {
   jsonLd?: object[];
   /** Seite beginnt mit Full-Bleed-Hero (Header liegt darüber) */
   fullBleedTop?: boolean;
+  /**
+   * Breites Layout für Seiten, die aus Rastern und Tabellen bestehen — dort ist
+   * der leere Rand auf großen Bildschirmen verschenkt. Seiten mit Fließtext
+   * bleiben schmal: über etwa 75 Zeichen je Zeile wird Lesen mühsam.
+   */
+  weit?: boolean;
 }
 
-const { title, description, noindex = false, jsonLd = [], fullBleedTop = false } = Astro.props;
+const { title, description, noindex = false, jsonLd = [], fullBleedTop = false, weit = false } = Astro.props;
+// Eine Klasse für Header und Inhalt, damit die Marke immer über dem Inhalt sitzt.
+const bahn = weit ? 'max-w-[100rem]' : 'max-w-6xl';
 // Teilbild fürs Web: feste Datei statt zugeschnittenem Hero-Motiv, damit beim Teilen
 // Markenzeichen und Name mitkommen. Die URL bleibt stabil — Discord, Slack und
 // Facebook merken sich das Bild pro URL und laden es sonst nicht neu.
@@ -70,8 +78,8 @@ const baseJsonLd = {
     >
       Zum Inhalt springen
     </a>
-    <Header transparent={fullBleedTop} />
-    <main id="inhalt" class="mx-auto w-full max-w-6xl px-4 sm:px-6">
+    <Header transparent={fullBleedTop} bahn={bahn} />
+    <main id="inhalt" class:list={['mx-auto w-full px-4 sm:px-6', bahn]}>
       <slot />
     </main>
     <Footer />

@@ -6,8 +6,10 @@ import { BRAND, href } from '../lib/site';
 interface Props {
   /** über Full-Bleed-Hero: absolut + durchsichtig statt sticky Glas */
   transparent?: boolean;
+  /** Breitenklasse des Inhalts — der Header laeuft mit, damit die Marke darueber sitzt */
+  bahn?: string;
 }
-const { transparent = false } = Astro.props;
+const { transparent = false, bahn = 'max-w-6xl' } = Astro.props;
 
 const current = Astro.url.pathname;
 const isActive = (path: string) => current === href(path) || current === `${href(path)}/`;
@@ -21,7 +23,7 @@ const isActive = (path: string) => current === href(path) || current === `${href
       : 'sticky top-0 border-b border-line bg-ink/85 backdrop-blur-md',
   ]}
 >
-  <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-6 px-4 py-3 sm:px-6">
+  <div class:list={['mx-auto flex w-full items-center justify-between gap-6 px-4 py-3 sm:px-6', bahn]}>
     <a href={href('/')} class="flex items-baseline gap-0.5 font-display text-lg font-bold tracking-tight no-underline">
       {BRAND}<Zeichen class="star star-anhang" />
     </a>
