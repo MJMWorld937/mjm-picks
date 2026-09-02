@@ -163,6 +163,7 @@ const fmt = (total: number) => (total / 10).toFixed(1).replace('.', ',');
     color: var(--faint);
   }
   .row {
+    position: relative;
     display: grid;
     grid-template-columns: 1.5rem 1fr auto;
     align-items: baseline;
@@ -171,13 +172,71 @@ const fmt = (total: number) => (total / 10).toFixed(1).replace('.', ',');
     padding: 0.45rem 0.5rem;
     color: inherit;
     text-decoration: none;
-    transition: background-color 0.18s ease, color 0.18s ease;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      box-shadow 0.28s ease;
   }
-  .row:hover {
-    background: color-mix(in oklab, var(--paper) 7%, transparent);
+
+  /* Lichtbalken am linken Rand — waechst beim Ueberfahren aus der Mitte heraus. */
+  .row::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 2px;
+    height: 0;
+    transform: translateY(-50%);
+    border-radius: 2px;
+    background: var(--accent);
+    transition: height 0.28s ease, box-shadow 0.28s ease;
   }
+
+  .row:hover,
+  .row:focus-visible {
+    background: color-mix(in oklab, var(--accent) 11%, transparent);
+    box-shadow:
+      inset 0 0 0 1px color-mix(in oklab, var(--accent) 26%, transparent),
+      0 0 20px -8px color-mix(in oklab, var(--accent) 60%, transparent);
+  }
+  .row:hover::before,
+  .row:focus-visible::before {
+    height: 66%;
+    box-shadow: 0 0 8px color-mix(in oklab, var(--accent) 80%, transparent);
+  }
+  /* Rang und Wertung ziehen mit: die Zahl bekommt den Schein. */
+  .row:hover .pos,
+  .row:focus-visible .pos {
+    color: var(--accent-soft);
+  }
+  .row:hover .val,
+  .row:focus-visible .val {
+    color: var(--paper);
+    text-shadow: 0 0 10px color-mix(in oklab, var(--accent) 70%, transparent);
+  }
+
+  /* Die Karte, auf deren Seite man gerade ist, bleibt dauerhaft markiert. */
   .row.active {
     background: color-mix(in oklab, var(--accent) 16%, transparent);
+  }
+  .row.active::before {
+    height: 66%;
+  }
+
+  /* Wer keine Bewegung mag, bekommt die Farbe ohne Wachsen und Leuchten. */
+  @media (prefers-reduced-motion: reduce) {
+    .row,
+    .row::before {
+      transition: none;
+    }
+    .row:hover::before,
+    .row:focus-visible::before {
+      box-shadow: none;
+    }
+    .row:hover .val,
+    .row:focus-visible .val {
+      text-shadow: none;
+    }
   }
   .pos {
     font-family: var(--font-mono, ui-monospace, monospace);
