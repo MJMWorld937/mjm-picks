@@ -137,7 +137,8 @@ export function getConflicts(): Promise<ProductConflict[]> {
   conflictsCache ??= (async () => {
     const { data, error } = await supabase
       .from('conflicts')
-      .select('product_id, claim_category, side_a, side_b, explanation_candidates, note');
+      .select('product_id, claim_category, side_a, side_b, explanation_candidates, note')
+      .eq('published', true);
     if (error) throw new Error(`conflicts: ${error.message}`);
     return (data ?? []).map((r: any) => ({
       productId: r.product_id,

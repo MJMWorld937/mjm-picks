@@ -119,10 +119,13 @@ const bars: { label: string; key: 'p' | 'i' | 'c' | 'k' | 's'; desc: string }[] 
         <h3 class="meta mb-2 text-amber-400!">Widersprüche in den Quellen</h3>
         {conflicts.map((cf) => (
           <div class="mb-2 text-sm last:mb-0">
-            <p><span class="text-muted">Labor/Tests:</span> {cf.sideA}</p>
-            <p><span class="text-muted">Community:</span> {cf.sideB}</p>
+            <p><span class="text-muted">Die eine Seite:</span> {cf.sideA}</p>
+            <p><span class="text-muted">Die andere:</span> {cf.sideB}</p>
             {cf.explanationCandidates.length > 0 && (
               <p class="mt-1 text-xs text-faint">Mögliche Erklärungen: {cf.explanationCandidates.join(' · ')}</p>
+            )}
+            {cf.note && (
+              <p class="mt-1 text-xs text-paper/80">Unsere Einordnung: {cf.note}</p>
             )}
           </div>
         ))}
